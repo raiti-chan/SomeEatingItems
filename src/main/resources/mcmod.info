@@ -1,0 +1,16 @@
+[
+{
+  "modid": "SomeEatingItems",
+  "name": "Some eating items",
+  "description": "This mod makes it possible to eat various items on use NBT Data.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Raiti-chan"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
