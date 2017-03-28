@@ -1,6 +1,7 @@
 package com.Raiti.SomeEatingItems.ASM;
 
-import cpw.mods.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper;
+import net.minecraftforge.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper;
+
 import org.jetbrains.annotations.NotNull;
 
 /**

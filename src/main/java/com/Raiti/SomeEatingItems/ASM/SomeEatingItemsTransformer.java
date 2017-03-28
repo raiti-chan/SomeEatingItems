@@ -2,14 +2,18 @@ package com.Raiti.SomeEatingItems.ASM;
 
 
 
+import net.minecraft.client.entity.EntityPlayerSP;
+
 import com.Raiti.SomeEatingItems.FoodMetaDataStructure;
-import cpw.mods.fml.relauncher.FMLLaunchHandler;
-import cpw.mods.fml.relauncher.Side;
-import net.minecraft.client.entity.EntityClientPlayerMP;
+
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemStack;
 import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraft.nbt.NBTTagCompound;
+
+import net.minecraftforge.fml.relauncher.FMLLaunchHandler;
+import net.minecraftforge.fml.relauncher.Side;
+
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -39,7 +43,7 @@ public class SomeEatingItemsTransformer implements IClassTransformer {
 	
 	@SuppressWarnings("unused")
 	public static boolean checkItem (ItemStack stack) {
-		return stack.getItemUseAction() == EnumAction.eat || stack.getItemUseAction() == EnumAction.drink || FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(stack.getTagCompound()) != null;
+		return stack.getItemUseAction() == EnumAction.EAT || stack.getItemUseAction() == EnumAction.DRINK || FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(stack.getTagCompound()) != null;
 	}
 	
 	
@@ -52,10 +56,9 @@ public class SomeEatingItemsTransformer implements IClassTransformer {
 	}
 	
 	@SuppressWarnings("unused")
-	public static int getItemInUseCount(EntityClientPlayerMP playerMP) {
-		ItemStack stack = playerMP.getItemInUse();
-		if (stack == null) return playerMP.getItemInUseCount();
-		if (FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(stack.getTagCompound()) == null) return playerMP.getItemInUseCount();
-		return playerMP.getItemInUseCount() - 26;
+	public static int getItemInUseCount(EntityPlayerSP player) {
+		ItemStack stack = player.getActiveItemStack();
+		if (FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(stack.getTagCompound()) == null) return player.getItemInUseCount();
+		return player.getItemInUseCount() - 26;
 	}
 }

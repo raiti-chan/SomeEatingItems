@@ -2,27 +2,21 @@ package com.Raiti.SomeEatingItems;
 
 import java.util.Random;
 
-import com.Raiti.SomeEatingItems.Packet.PacketHander;
-import com.Raiti.SomeEatingItems.Packet.RightClickItemMessage;
-import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.common.eventhandler.Cancelable;
-import cpw.mods.fml.common.eventhandler.Event;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
-import net.minecraft.client.entity.EntityOtherPlayerMP;
-import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.EnumAction;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.play.client.C09PacketHeldItemChange;
-import net.minecraft.network.play.server.S0BPacketAnimation;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.Vec3d;
+
+import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.entity.player.PlayerUseItemEvent;
+import net.minecraftforge.fml.common.eventhandler.Cancelable;
+import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 /**
  * ForgeEventFactory's EVENT_BUS on hook.
@@ -37,12 +31,6 @@ import net.minecraftforge.event.entity.player.PlayerUseItemEvent;
 public class ForgeEventHook {
 	
 	/**
-	 * Player Hands SlotIndex<br>
-	 * Client only.
-	 */
-	private int currentPlayerItem = -1;
-	
-	/**
 	 * Random.
 	 */
 	private Random random = new Random();
@@ -53,23 +41,15 @@ public class ForgeEventHook {
 	 * @param event RightClick Event
 	 */
 	@SubscribeEvent
-	public void onRightClickItem (PlayerInteractEvent event) {
-		if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_AIR)
-			return;                                        //右クリックじゃない場合無視
-		EntityPlayer player = event.entityPlayer;                                                                        //プレイヤーの取得
-		ItemStack heldItem = player.getHeldItem();                                                                        //手に持っているアイテムの取得
-		if (heldItem == null)
-			return;                                                                                    //持っていなかったら(null)無視
-		NBTTagCompound compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(heldItem.getTagCompound());    //タグの取得
-		if (compound == null)
-			return;                                                                                    //タグが無かったら(null)無視
-		//player.addChatComponentMessage(new ChatComponentTranslation((player.worldObj.isRemote ? "[Client]" : "[Server]") + "ItemClick"));
-		
-		int eatingTime = compound.getInteger("EatingTime");                                                    //食べる時間を取得
-		player.setItemInUse(heldItem, (eatingTime <= 0 ? 32 : eatingTime) + 26);                            //プレイヤーに食べる時間とアイテムをセット(26はバニラでupdateItemUseが起きないように)
-		
-		
-		if (player.worldObj.isRemote) {                //クライアント側の処理
+	public void onRightClickItem (PlayerInteractEvent.RightClickItem event) {
+		EntityPlayer player = event.getEntityPlayer(); //プレイヤーの取得
+		ItemStack heldItem = event.getItemStack(); //手に持っているアイテムの取得
+		NBTTagCompound compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(heldItem.getTagCompound()); //タグの取得
+		if (compound == null) return; //タグが無かったら(null)無視
+		player.setActiveHand(event.getHand());
+		/*
+		if (player.world.isRemote) {                //クライアント側の処理
+			
 			NetHandlerPlayClient playClient = (NetHandlerPlayClient) FMLClientHandler.instance().getClientPlayHandler();//ネットハンドラの取得
 			int index = player.inventory.currentItem;
 			if (this.currentPlayerItem != index) {
@@ -79,12 +59,12 @@ public class ForgeEventHook {
 			PacketHander.INSTANCE.sendToServer(new RightClickItemMessage());                                            //サーバーにRightClickItemイベントが発火されるように通知
 			
 		} else {                                    //サーバー側の処理
-			if (heldItem.getItem().getItemUseAction(heldItem) != EnumAction.eat) {
+			if (heldItem.getItem().getItemUseAction(heldItem) != EnumAction.EAT) {
 				EntityPlayerMP mp = (EntityPlayerMP) player;
-				mp.getServerForPlayer().getEntityTracker().func_151248_b(mp, new S0BPacketAnimation(mp, 3));
+				mp.getServer().getEntityTracker().func_151248_b(mp, new S0BPacketAnimation(mp, 3));
 			}
 		}
-		
+		*/
 		event.setCanceled(true);
 		event.setResult(Event.Result.DENY);
 	}
@@ -95,18 +75,12 @@ public class ForgeEventHook {
 	 * @param event UseItemStart event.This event occurs every second at player using item.
 	 */
 	@SubscribeEvent
-	public void onPlayerUseItem_Start (PlayerUseItemEvent.Start event) {
-		if (!event.entityPlayer.worldObj.isRemote)
-			return;                                                                //サーバーだったら無視
-		if (!(event.entityPlayer instanceof EntityOtherPlayerMP))
-			return;                                                //EntityOtherPlayerMPじゃなかったら無視
-		NBTTagCompound compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.item.getTagCompound());    //タグの取得
-		if (compound == null)
-			return;                                                                                    //タグが無かったら(null)無視
-		//event.entityPlayer.addChatComponentMessage(new ChatComponentTranslation((event.entityPlayer.worldObj.isRemote ? "[Client]" : "[Server]") + "Use_Start:" + event.duration));
-		EntityOtherPlayerMP playerMP = (EntityOtherPlayerMP) event.entityPlayer;                                        //Entityの取得
-		int eatingTime = compound.getInteger("EatingTime");                                                    //食べる時間を取得
-		event.duration = (eatingTime <= 0 ? 32 : eatingTime) + 27;                                                        //EntityOtherPlayerMPでdurationが既定値になるから上書き(26はバニラでupdateItemUseが起きないように)
+	public void onPlayerUseItem_Start (LivingEntityUseItemEvent.Start event) {
+		NBTTagCompound compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItem().getTagCompound());    //タグの取得
+		if (compound == null) return; //タグが無かったら(null)無視
+		EntityLivingBase playerMP = event.getEntityLiving(); //Entityの取得
+		int eatingTime = compound.getInteger("EatingTime"); //食べる時間を取得
+		event.setDuration((eatingTime <= 0 ? 32 : eatingTime) + 27); //EntityOtherPlayerMPでdurationが既定値になるから上書き(+27はバニラでupdateItemUseが起きないように(26を0とする))
 	}
 	
 	/**
@@ -115,54 +89,71 @@ public class ForgeEventHook {
 	 * @param event UseItemTick event.
 	 */
 	@SubscribeEvent
-	public void onPlayerUseItem_Tick (PlayerUseItemEvent.Tick event) {
-		if (event.item == null) return;
-		NBTTagCompound compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.item.getTagCompound());    //タグの取得
-		if (compound == null)
-			return;                                                                                    //タグが無かったら(null)無視
-		int eatingTime = compound.getInteger("EatingTime");
-		//event.entityPlayer.addChatComponentMessage(new ChatComponentTranslation((event.entityPlayer.worldObj.isRemote ? "[Client]" : "[Server]") + "Use_Tick:" + event.duration));
-		if (event.duration <= 27) {                            //Durationが27以下だった場合Finishの処理
-			ItemStack itemStack = event.item;
-			EntityPlayer player = event.entityPlayer;
-			int i = itemStack.stackSize;
-			--itemStack.stackSize;
-			player.worldObj.playSoundAtEntity(player, "random.burp", 0.5F, player.worldObj.rand.nextFloat() * 0.1F + 0.9F);
-			onEaten(itemStack);
-			player.clearItemInUse();
-			event.duration = 0;
-			if (itemStack.stackSize != i) {
-				player.inventory.mainInventory[player.inventory.currentItem] = itemStack;
-				if (itemStack.stackSize <= 0) {
-					player.inventory.mainInventory[player.inventory.currentItem] = null;
-				}
-			}
-		} else if (event.duration <= 52 && event.duration % 4 == 0) {
-			ItemStack itemStack = event.item;
-			EntityPlayer player = event.entityPlayer;
-			for (int j = 0; j < 5; ++j) {                    //パーティクルの計算
-				Vec3 vec3 = Vec3.createVectorHelper(((double) this.random.nextFloat() - 0.5D) * 0.1D, Math.random() * 0.1D + 0.1D, 0.0D);
-				vec3.rotateAroundX(-player.rotationPitch * (float) Math.PI / 180.0F);
-				vec3.rotateAroundY(-player.rotationYaw * (float) Math.PI / 180.0F);
-				Vec3 vec31 = Vec3.createVectorHelper(((double) this.random.nextFloat() - 0.5D) * 0.3D, (double) (-this.random.nextFloat()) * 0.6D - 0.3D, 0.6D);
-				vec31.rotateAroundX(-player.rotationPitch * (float) Math.PI / 180.0F);
-				vec31.rotateAroundY(-player.rotationYaw * (float) Math.PI / 180.0F);
-				vec31 = vec31.addVector(player.posX, player.posY + (double) player.getEyeHeight(), player.posZ);
-				String s = "iconcrack_" + Item.getIdFromItem(itemStack.getItem());
-				
-				if (itemStack.getHasSubtypes()) {
-					s = s + "_" + itemStack.getItemDamage();
-				}
-				
-				player.worldObj.spawnParticle(s, vec31.xCoord, vec31.yCoord, vec31.zCoord, vec3.xCoord, vec3.yCoord + 0.05D, vec3.zCoord);        //パーティクル発生!!
-			}
-			
-			player.playSound("random.eat", 0.5F + 0.5F * (float) this.random.nextInt(2),
-					(this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);                        //食べてる音を鳴らそうね
-		}
+	public void onPlayerUseItem_Tick (LivingEntityUseItemEvent.Tick event) {
+		NBTTagCompound compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItem().getTagCompound());    //タグの取得
+		if (compound == null) return; //タグが無かったら(null)無視
+		
+		final int eatingTime = compound.getInteger("EatingTime"); //食べるのにかかる時間を取得
+		final int duration = event.getDuration(); //残り時間を取得
+		
+		if (duration <= 27) { //Durationが27以下だった場合Finishの処理
+			onPlayerUseItem_Finish(event.getEntityLiving(), event.getItem());
+			event.setDuration(0);
+		} else if (event.getDuration() <= 52 && event.getDuration() % 4 == 0)
+			updateItemUse(event.getEntityLiving(), event.getItem(), 5);
+	}
+	
+	/**
+	 * This method occurs finished item use.
+	 * @param entity player.
+	 * @param stack used item.
+	 */
+	private void onPlayerUseItem_Finish (EntityLivingBase entity, ItemStack stack) {
+		int count = stack.getCount();
+		updateItemUse(entity, stack, 16);
+		stack.shrink(1);
+		entity.world.playSound(null, entity.posX, entity.posY, entity.posZ, SoundEvents.ENTITY_PLAYER_BURP, SoundCategory.PLAYERS, 0.5F, entity.world.rand.nextFloat() * 0.1F + 0.9F);
+		onEaten(stack);
+		entity.resetActiveHand();
+		entity.setHeldItem(entity.getActiveHand(), stack);
+		//統計情報を追加するかも？
 		
 	}
 	
+	/**
+	 * Update to Sound and Particle.
+	 * @param entity player.
+	 * @param stack item.
+	 * @param eatingParticleCount particle count.
+	 */
+	private void updateItemUse (EntityLivingBase entity, ItemStack stack, int eatingParticleCount) {
+		for (int i = 0; i < eatingParticleCount; i++) { //パーティクルの計算
+			Vec3d vec3d = new Vec3d(((double) this.random.nextFloat() - 0.5D) * 0.1D, Math.random() * 0.1D + 0.1D, 0.0D);
+			vec3d = vec3d.rotatePitch(-entity.rotationPitch * 0.017453292F);
+			vec3d = vec3d.rotateYaw(-entity.rotationYaw * 0.017453292F);
+			double d0 = (double) (-this.random.nextFloat()) * 0.6D - 0.3D;
+			Vec3d vec3d1 = new Vec3d(((double) this.random.nextFloat() - 0.5D) * 0.3D, d0, 0.6D);
+			vec3d1 = vec3d1.rotatePitch(-entity.rotationPitch * 0.017453292F);
+			vec3d1 = vec3d1.rotateYaw(-entity.rotationYaw * 0.017453292F);
+			vec3d1 = vec3d1.addVector(entity.posX, entity.posY + (double) entity.getEyeHeight(), entity.posZ);
+			
+			if (stack.getHasSubtypes()) //アイテムがメタデータを持っている場合
+				entity.world.spawnParticle(EnumParticleTypes.ITEM_CRACK, vec3d1.xCoord, vec3d1.yCoord, vec3d1.zCoord, vec3d.xCoord, vec3d.yCoord + 0.05D, vec3d.zCoord,
+						Item.getIdFromItem(stack.getItem()), stack.getMetadata()); //パーティクルの発生
+			else //無い場合
+				entity.world.spawnParticle(EnumParticleTypes.ITEM_CRACK, vec3d1.xCoord, vec3d1.yCoord, vec3d1.zCoord, vec3d.xCoord, vec3d.yCoord + 0.05D, vec3d.zCoord,
+						Item.getIdFromItem(stack.getItem())); //パーティクルの発生
+		}
+		
+		entity.playSound(SoundEvents.ENTITY_GENERIC_EAT, 0.5F + 0.5F * (float) this.random.nextInt(2), (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
+		//音を鳴らす
+	}
+	
+	/**
+	 * On eat.<br>
+	 * Add a effect to player.
+	 * @param stack eat item.
+	 */
 	private void onEaten (ItemStack stack) {
 		
 	}

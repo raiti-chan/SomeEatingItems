@@ -1,9 +1,11 @@
 package com.Raiti.SomeEatingItems.Packet;
 
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraftforge.fml.relauncher.Side;
+
 import com.Raiti.SomeEatingItems.SomeEatingItems;
-import cpw.mods.fml.common.network.NetworkRegistry;
-import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
-import cpw.mods.fml.relauncher.Side;
+
 
 /**
  * <br>Created by Raiti-chan on 2017/03/04.
@@ -17,6 +19,7 @@ public class PacketHander {
 	/**
 	 * PacketChannel Instance
 	 */
+	@SuppressWarnings("WeakerAccess")
 	public static final SimpleNetworkWrapper INSTANCE = NetworkRegistry.INSTANCE.newSimpleChannel(SomeEatingItems.MOD_ID);
 	
 	

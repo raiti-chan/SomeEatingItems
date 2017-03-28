@@ -2,8 +2,7 @@ package com.Raiti.SomeEatingItems.ASM;
 
 import java.util.Map;
 
-import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
-import net.minecraft.client.renderer.ItemRenderer;
+import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 
 /**
  * This FMLLoadingPlugin is Overwrite ItemRenderer.
@@ -70,7 +69,7 @@ public class SomeEatingItemsCorePlugin implements IFMLLoadingPlugin {
 	
 	/**
 	 * Return an optional access transformer class for this coremod. It will be injected post-deobf
-	 * so ensure your ATs conform to the new srgnames scheme.
+	 * so ensure your ATs conform to the new SRGNames scheme.
 	 *
 	 * @return the name of an access transformer class or null if none is provided
 	 */

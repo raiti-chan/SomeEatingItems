@@ -2,16 +2,18 @@ package com.Raiti.SomeEatingItems;
 
 import com.Raiti.SomeEatingItems.Packet.PacketHander;
 import com.Raiti.SomeEatingItems.Server.CommonProxy;
-import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.ModMetadata;
-import cpw.mods.fml.common.SidedProxy;
-import cpw.mods.fml.common.event.FMLPostInitializationEvent;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.registry.GameRegistry;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.ItemFood;
-import net.minecraft.item.ItemStack;
+
+import net.minecraft.stats.StatList;
+
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.ModMetadata;
+import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 
 /**
  * MainClass.<br>
@@ -24,12 +26,13 @@ import net.minecraftforge.common.MinecraftForge;
  */
 @SuppressWarnings("WeakerAccess")
 @Mod(modid = SomeEatingItems.MOD_ID, name = SomeEatingItems.MOD_NAME, version = SomeEatingItems.MOD_VERSION, useMetadata = true)
+@Mod.EventBusSubscriber
 public class SomeEatingItems {
 	
 	/**
 	 * This mod ID.
 	 */
-	public static final String MOD_ID = "SomeEatingItems";
+	public static final String MOD_ID = "someeatingitems";
 	
 	/**
 	 * This mod name.
@@ -39,7 +42,8 @@ public class SomeEatingItems {
 	/**
 	 * This mod version.
 	 */
-	public static final String MOD_VERSION = "1.0.0 a";
+	public static final String MOD_VERSION = "1.11.x-1.0.0 a";
+	
 	
 	/**
 	 * This mod's proxy instance.
@@ -57,32 +61,34 @@ public class SomeEatingItems {
 	
 	/**
 	 * This mod's PreInitializer.
+	 *
 	 * @param event FML Event
 	 */
 	@SuppressWarnings("unused")
 	@Mod.EventHandler
-	public void preInit(FMLPreInitializationEvent event) {
+	public void preInit (FMLPreInitializationEvent event) {
 		writeMetaData(metadata);
 		PacketHander.init();
-		
 	}
 	
 	
 	/**
 	 * This mod's PostInitializer.
+	 *
 	 * @param event FML Event
 	 */
 	@SuppressWarnings("unused")
 	@Mod.EventHandler
-	public void postInit(FMLPostInitializationEvent event) {
+	public void postInit (FMLPostInitializationEvent event) {
 		MinecraftForge.EVENT_BUS.register(new ForgeEventHook());
 	}
 	
 	/**
 	 * Write this mod's metadata.
+	 *
 	 * @param metadata This mod's metadata
 	 */
-	private void writeMetaData(ModMetadata metadata) {
+	private void writeMetaData (ModMetadata metadata) {
 		metadata.modId = MOD_ID;
 		metadata.name = MOD_NAME;
 		metadata.version = MOD_VERSION;
