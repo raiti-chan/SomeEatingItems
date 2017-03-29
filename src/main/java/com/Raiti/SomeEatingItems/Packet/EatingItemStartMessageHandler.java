@@ -1,5 +1,6 @@
 package com.Raiti.SomeEatingItems.Packet;
 
+import com.Raiti.SomeEatingItems.SomeEatingItems;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -24,6 +25,7 @@ public class EatingItemStartMessageHandler implements IMessageHandler<EatingItem
 	 */
 	@Override
 	public IMessage onMessage (EatingItemStartMessage message, MessageContext ctx) {
+		SomeEatingItems.proxy.getEntityPlayerInstance().resetActiveHand();
 		return null;
 	}
 }

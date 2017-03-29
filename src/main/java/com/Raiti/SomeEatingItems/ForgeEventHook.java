@@ -115,7 +115,6 @@ public class ForgeEventHook {
 		onEaten(stack);
 		entity.resetActiveHand();
 		entity.setHeldItem(entity.getActiveHand(), stack);
-		//if (entity.getEntityWorld().isRemote) PacketHander.INSTANCE.sendToServer(new EatingItemFinishMessage()); //サーバーへ通知
 		//統計情報を追加するかも？
 		
 	}
