@@ -2,6 +2,8 @@ package com.Raiti.SomeEatingItems.ASM;
 
 
 
+import java.util.function.Function;
+
 import net.minecraft.client.entity.EntityPlayerSP;
 
 import com.Raiti.SomeEatingItems.FoodMetaDataStructure;
@@ -27,17 +29,22 @@ import org.objectweb.asm.ClassWriter;
  */
 public class SomeEatingItemsTransformer implements IClassTransformer {
 	
-	private static final String TARGET_CLASS = "net.minecraft.client.renderer.ItemRenderer";
+	private static final String ITEM_RENDERER = "net.minecraft.client.renderer.ItemRenderer";
 	
 	@Override
-	public byte[] transform (String name, String transformedName, byte[] basicClass) {
-		if (FMLLaunchHandler.side() == Side.SERVER || !transformedName.equals(TARGET_CLASS)) return basicClass;
+	public byte[] transform (final String name, final String transformedName, final byte[] basicClass) {
+		if (FMLLaunchHandler.side() == Side.SERVER || !transformedName.equals(ITEM_RENDERER)) return basicClass;
+		if (transformedName.equals(ITEM_RENDERER)) return getClassWriter(basicClass, classWriter -> new ItemRendererClassVisitor(name, classWriter)).toByteArray();
+		return basicClass;
+	}
+	
+	
+	private static ClassWriter getClassWriter (byte[] basicClass, Function<ClassWriter, ClassVisitor> function) {
 		ClassReader reader = new ClassReader(basicClass);
 		ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-		ClassVisitor visitor = new ItemRendererClassVisitor(name, writer);
-		
+		ClassVisitor visitor = function.apply(writer);
 		reader.accept(visitor, 0);
-		return writer.toByteArray();
+		return writer;
 	}
 	
 	

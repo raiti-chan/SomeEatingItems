@@ -18,6 +18,11 @@ import net.minecraftforge.fml.common.eventhandler.Cancelable;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+import com.Raiti.SomeEatingItems.Packet.EatingItemFinishMessage;
+import com.Raiti.SomeEatingItems.Packet.EatingItemStartMessage;
+import com.Raiti.SomeEatingItems.Packet.EatingItemStopMessage;
+import com.Raiti.SomeEatingItems.Packet.PacketHander;
+
 /**
  * ForgeEventFactory's EVENT_BUS on hook.
  * <br>Created by Raiti-chan on 2017/03/04.
@@ -42,31 +47,16 @@ public class ForgeEventHook {
 	 */
 	@SubscribeEvent
 	public void onRightClickItem (PlayerInteractEvent.RightClickItem event) {
-		EntityPlayer player = event.getEntityPlayer(); //プレイヤーの取得
-		ItemStack heldItem = event.getItemStack(); //手に持っているアイテムの取得
-		NBTTagCompound compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(heldItem.getTagCompound()); //タグの取得
-		if (compound == null) return; //タグが無かったら(null)無視
-		player.setActiveHand(event.getHand());
-		/*
-		if (player.world.isRemote) {                //クライアント側の処理
-			
-			NetHandlerPlayClient playClient = (NetHandlerPlayClient) FMLClientHandler.instance().getClientPlayHandler();//ネットハンドラの取得
-			int index = player.inventory.currentItem;
-			if (this.currentPlayerItem != index) {
-				this.currentPlayerItem = index;
-				playClient.addToSendQueue(new C09PacketHeldItemChange(player.inventory.currentItem));                    //もしスロットが変わっていたらサーバーに通知
-			}
-			PacketHander.INSTANCE.sendToServer(new RightClickItemMessage());                                            //サーバーにRightClickItemイベントが発火されるように通知
-			
-		} else {                                    //サーバー側の処理
-			if (heldItem.getItem().getItemUseAction(heldItem) != EnumAction.EAT) {
-				EntityPlayerMP mp = (EntityPlayerMP) player;
-				mp.getServer().getEntityTracker().func_151248_b(mp, new S0BPacketAnimation(mp, 3));
-			}
+		if (event.getWorld().isRemote) {
+			EntityPlayer player = event.getEntityPlayer(); //プレイヤーの取得
+			ItemStack heldItem = event.getItemStack(); //手に持っているアイテムの取得
+			NBTTagCompound compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(heldItem.getTagCompound()); //タグの取得
+			if (compound == null) return; //タグが無かったら(null)無視
+			player.setActiveHand(event.getHand());
+			PacketHander.INSTANCE.sendToServer(new EatingItemStartMessage()); // サーバーへ通知
+			event.setCanceled(true);
+			event.setResult(Event.Result.DENY);
 		}
-		*/
-		event.setCanceled(true);
-		event.setResult(Event.Result.DENY);
 	}
 	
 	/**
@@ -103,6 +93,10 @@ public class ForgeEventHook {
 			updateItemUse(event.getEntityLiving(), event.getItem(), 5);
 	}
 	
+	public void onPlayerUseItem_Stop (LivingEntityUseItemEvent.Stop event) {
+		if (event.getEntityLiving().world.isRemote) PacketHander.INSTANCE.sendToServer(new EatingItemStopMessage());
+	}
+	
 	/**
 	 * This method occurs finished item use.
 	 * @param entity player.
@@ -116,6 +110,7 @@ public class ForgeEventHook {
 		onEaten(stack);
 		entity.resetActiveHand();
 		entity.setHeldItem(entity.getActiveHand(), stack);
+		if (entity.getEntityWorld().isRemote) PacketHander.INSTANCE.sendToServer(new EatingItemFinishMessage()); //サーバーへ通知
 		//統計情報を追加するかも？
 		
 	}

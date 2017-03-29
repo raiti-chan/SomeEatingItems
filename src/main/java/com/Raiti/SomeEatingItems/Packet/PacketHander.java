@@ -24,7 +24,10 @@ public class PacketHander {
 	
 	
 	public static void init() {
-		INSTANCE.registerMessage(RightClickItemMessageHandler.class, RightClickItemMessage.class, 0, Side.SERVER);
+		INSTANCE.registerMessage(EatingItemStartMessageHandler.class, EatingItemStartMessage.class, 0, Side.SERVER);
+		INSTANCE.registerMessage(EatingItemFinishMessageHandler.class, EatingItemFinishMessage.class, 1, Side.SERVER);
+		INSTANCE.registerMessage(EatingItemStopMessageHandler.class, EatingItemStopMessage.class, 2, Side.SERVER);
 	}
+	
 	
 }
