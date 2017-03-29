@@ -3,7 +3,6 @@ package com.Raiti.SomeEatingItems;
 import java.util.Random;
 
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -15,10 +14,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.Cancelable;
-import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-import com.Raiti.SomeEatingItems.Packet.EatingItemFinishMessage;
 import com.Raiti.SomeEatingItems.Packet.EatingItemStartMessage;
 import com.Raiti.SomeEatingItems.Packet.EatingItemStopMessage;
 import com.Raiti.SomeEatingItems.Packet.PacketHander;
@@ -47,16 +44,12 @@ public class ForgeEventHook {
 	 */
 	@SubscribeEvent
 	public void onRightClickItem (PlayerInteractEvent.RightClickItem event) {
-		if (event.getWorld().isRemote) {
-			EntityPlayer player = event.getEntityPlayer(); //プレイヤーの取得
-			ItemStack heldItem = event.getItemStack(); //手に持っているアイテムの取得
-			NBTTagCompound compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(heldItem.getTagCompound()); //タグの取得
-			if (compound == null) return; //タグが無かったら(null)無視
-			player.setActiveHand(event.getHand());
-			PacketHander.INSTANCE.sendToServer(new EatingItemStartMessage()); // サーバーへ通知
-			event.setCanceled(true);
-			event.setResult(Event.Result.DENY);
-		}
+		if (!event.getWorld().isRemote) return; //サーバー側の処理はさせないっ!!
+		NBTTagCompound compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound()); //タグの取得
+		if (compound == null) return; //タグが無かったら(null)無視
+		event.getEntityLiving().setActiveHand(event.getHand()); //アイテムを使用している状態へ
+		PacketHander.INSTANCE.sendToServer(new EatingItemStartMessage()); // サーバーへ通知
+		event.setCanceled(true);
 	}
 	
 	/**
@@ -66,11 +59,12 @@ public class ForgeEventHook {
 	 */
 	@SubscribeEvent
 	public void onPlayerUseItem_Start (LivingEntityUseItemEvent.Start event) {
-		NBTTagCompound compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItem().getTagCompound());    //タグの取得
+		if (!event.getEntityLiving().getEntityWorld().isRemote) return; //サーバー側の処理はさせないっ!!
+		NBTTagCompound compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItem().getTagCompound()); //タグの取得
 		if (compound == null) return; //タグが無かったら(null)無視
-		EntityLivingBase playerMP = event.getEntityLiving(); //Entityの取得
-		int eatingTime = compound.getInteger("EatingTime"); //食べる時間を取得
-		event.setDuration((eatingTime <= 0 ? 32 : eatingTime) + 27); //EntityOtherPlayerMPでdurationが既定値になるから上書き(+27はバニラでupdateItemUseが起きないように(26を0とする))
+		int eatingTime = FoodMetaDataStructure.getEatingTime(compound); //食べる時間を取得
+		event.setDuration((eatingTime <= 0 ? 32 : eatingTime) + 27); //かかる時間を設定(+27はバニラでの処理を避けるため)
+		
 	}
 	
 	/**
@@ -80,27 +74,38 @@ public class ForgeEventHook {
 	 */
 	@SubscribeEvent
 	public void onPlayerUseItem_Tick (LivingEntityUseItemEvent.Tick event) {
+		if (!event.getEntityLiving().getEntityWorld().isRemote) return; //サーバー側での処理はさせないっ!!
 		NBTTagCompound compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItem().getTagCompound());    //タグの取得
 		if (compound == null) return; //タグが無かったら(null)無視
 		
-		final int eatingTime = compound.getInteger("EatingTime"); //食べるのにかかる時間を取得
-		final int duration = event.getDuration(); //残り時間を取得
+		//final int eatingTime = FoodMetaDataStructure.getEatingTime(compound); //食べるのにかかる時間を取得
+		//final int duration = event.getDuration(); //残り時間を取得
 		
+		event.setDuration(event.getDuration() + 1); //アイテムの使用時間を止める
+		/*
 		if (duration <= 27) { //Durationが27以下だった場合Finishの処理
 			onPlayerUseItem_Finish(event.getEntityLiving(), event.getItem());
 			event.setDuration(0);
 		} else if (event.getDuration() <= 52 && event.getDuration() % 4 == 0)
 			updateItemUse(event.getEntityLiving(), event.getItem(), 5);
+		*/
 	}
 	
+	/**
+	 * This event occurs at player stopped use item.
+	 *
+	 * @param event UseItemStop event.
+	 */
+	@SubscribeEvent
 	public void onPlayerUseItem_Stop (LivingEntityUseItemEvent.Stop event) {
 		if (event.getEntityLiving().world.isRemote) PacketHander.INSTANCE.sendToServer(new EatingItemStopMessage());
 	}
 	
 	/**
 	 * This method occurs finished item use.
+	 *
 	 * @param entity player.
-	 * @param stack used item.
+	 * @param stack  used item.
 	 */
 	private void onPlayerUseItem_Finish (EntityLivingBase entity, ItemStack stack) {
 		int count = stack.getCount();
@@ -110,17 +115,19 @@ public class ForgeEventHook {
 		onEaten(stack);
 		entity.resetActiveHand();
 		entity.setHeldItem(entity.getActiveHand(), stack);
-		if (entity.getEntityWorld().isRemote) PacketHander.INSTANCE.sendToServer(new EatingItemFinishMessage()); //サーバーへ通知
+		//if (entity.getEntityWorld().isRemote) PacketHander.INSTANCE.sendToServer(new EatingItemFinishMessage()); //サーバーへ通知
 		//統計情報を追加するかも？
 		
 	}
 	
 	/**
 	 * Update to Sound and Particle.
-	 * @param entity player.
-	 * @param stack item.
+	 *
+	 * @param entity              player.
+	 * @param stack               item.
 	 * @param eatingParticleCount particle count.
 	 */
+	@SuppressWarnings("SameParameterValue")
 	private void updateItemUse (EntityLivingBase entity, ItemStack stack, int eatingParticleCount) {
 		for (int i = 0; i < eatingParticleCount; i++) { //パーティクルの計算
 			Vec3d vec3d = new Vec3d(((double) this.random.nextFloat() - 0.5D) * 0.1D, Math.random() * 0.1D + 0.1D, 0.0D);
@@ -147,6 +154,7 @@ public class ForgeEventHook {
 	/**
 	 * On eat.<br>
 	 * Add a effect to player.
+	 *
 	 * @param stack eat item.
 	 */
 	private void onEaten (ItemStack stack) {

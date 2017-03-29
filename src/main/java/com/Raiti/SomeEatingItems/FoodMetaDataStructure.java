@@ -26,4 +26,10 @@ public class FoodMetaDataStructure {
 		if (compound == null) return null;
 		return compound.getCompoundTag("FoodMetadata");
 	}
+	
+	public static int getEatingTime(NBTTagCompound compound) {
+		if (compound == null) return 32;
+		int time = compound.getInteger("EatingTime");
+		return time <= 0 ? 32 : time;
+	}
 }
