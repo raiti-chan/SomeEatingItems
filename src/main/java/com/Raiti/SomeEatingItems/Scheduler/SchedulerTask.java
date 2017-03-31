@@ -61,14 +61,43 @@ package com.Raiti.SomeEatingItems.Scheduler;
  *
  * @author Raiti-chan
  * @version 1.0.0
- * @since 1.0.0
  * @see SchedulerRunnable
  * @see #run()
  * @see #stop()
  * @see #setStartDelay(int)
+ * @since 1.0.0
  */
 public class SchedulerTask implements SchedulerRunnable {
 	
+	/**
+	 * What will be run.
+	 */
+	private SchedulerRunnable runnable = null;
+	
+	/**
+	 * Task priority.
+	 */
+	private byte priority = 0;
+	
+	private boolean isRunning = false;
+	
+	/**
+	 * Allocates a new {@link SchedulerTask} object.
+	 * This constructor has the same effect as {@linkplain SchedulerTask(SchedulerRunnable)}{@code (null)}.
+	 */
+	public SchedulerTask () {
+		this(null);
+	}
+	
+	/**
+	 * Allocates a new {@link SchedulerTask} object so that it has {@code runnable} as its run object.
+	 *
+	 * @param runnable the object whose {@code run} method is invoked when this task is started.
+	 *                 If {@code null}, this task's run method is invoked.
+	 */
+	public SchedulerTask (SchedulerRunnable runnable) {
+		this.runnable = runnable;
+	}
 	
 	
 	/**
@@ -79,7 +108,15 @@ public class SchedulerTask implements SchedulerRunnable {
 	 */
 	@Override
 	public void run () {
+		if (runnable != null) {
+			runnable.run();
+		}
+	}
 	
+	
+	public void start() {
+		ScheduleTaskRegister.getInstance().add(this);
+		isRunning = true;
 	}
 	
 	/**
@@ -94,16 +131,44 @@ public class SchedulerTask implements SchedulerRunnable {
 	/**
 	 * Specify the delay time before the task is started
 	 * After the specified time (Tick) has elapsed, execution of the scheduled task is started.
-	 * But loop schedule loop period is not this method.
-	 * @param tick
+	 * But loop schedule loop cycle interval time is not this method.
+	 *
+	 * @param tick delay time (20tick = 1second)
 	 */
-	public void setStartDelay(int tick) {
+	public void setStartDelay (int tick) {
+	
+	}
+	
+	/**
+	 * Specify the number of loop.
+	 * If you specify a number or less 0, that is endless loop.
+	 *
+	 * @param value number of loop.
+	 */
+	public void setLoopOfNumber (int value) {
+	
+	}
+	
+	/**
+	 * Specify to cycle interval time.
+	 *
+	 * @param tick This value must be a value greater than or equal to 0.
+	 *             If you specify a number less than 0, an {@link IllegalArgumentException} will be thrown.
+	 * @throws IllegalArgumentException Thrown if the argument is less than or equal to 0.
+	 */
+	public void setLoopPeriod (int tick) throws IllegalArgumentException {
 	
 	}
 	
 	
 	
-	public void setLoopTask (boolean isLoop) {
-	
+	public void setPriority (byte priority) {
+		this.priority = priority;
 	}
+	
+	
+	public byte getPriority () {
+		return this.priority;
+	}
+	
 }

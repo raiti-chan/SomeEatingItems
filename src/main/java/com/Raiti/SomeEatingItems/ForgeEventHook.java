@@ -45,8 +45,7 @@ public class ForgeEventHook {
 	@SubscribeEvent
 	public void onRightClickItem (PlayerInteractEvent.RightClickItem event) {
 		if (!event.getWorld().isRemote) return; //サーバー側の処理はさせないっ!!
-		NBTTagCompound compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound()); //タグの取得
-		if (compound == null) return; //タグが無かったら(null)無視
+		if (FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound()) == null) return; //タグが無かったら(null)無視
 		event.getEntityLiving().setActiveHand(event.getHand()); //アイテムを使用している状態へ
 		PacketHander.INSTANCE.sendToServer(new EatingItemStartMessage()); // サーバーへ通知
 		event.setCanceled(true);
