@@ -15,13 +15,14 @@ package com.Raiti.SomeEatingItems.Scheduler;
  * the {@link SchedulerRunnable#run()} method and other {@link SchedulerRunnable} methods.
  * This is important because classes should not be subclassed unless the programmer intends on modifying or enhancing
  * the fundamental behavior of the class.
- *
+ * <p>
  * <br>Created by Raiti-chan on 2017/03/29.
  *
  * @author Raiti-chan
  * @version 1.0.0
  * @since 1.0.0
  */
+@SuppressWarnings("unused")
 @FunctionalInterface
 public interface SchedulerRunnable {
 	
@@ -32,5 +33,22 @@ public interface SchedulerRunnable {
 	 * The general contract of method <code>run</code> is that it may take any action whatsoever.
 	 */
 	void run ();
+	
+	/**
+	 * It will be executed after the last processing of this task.
+	 * However, if {@link SchedulerTask#stop()} is executed, this process will not be executed.
+	 * Therefore, this method dose not occur in the loop task.
+	 * Please implement stopped when processing at {@link SchedulerTask#stop()} when stopped.
+	 */
+	default void finish () {
+	
+	}
+	
+	/**
+	 * Occurs when the {@link SchedulerTask#stop()} method is called and the task is stopped.
+	 */
+	default void stopped () {
+	
+	}
 	
 }

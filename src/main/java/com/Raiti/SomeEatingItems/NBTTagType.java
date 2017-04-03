@@ -7,6 +7,7 @@ package com.Raiti.SomeEatingItems;
  * @version 1.0.0
  * @since 1.0.0
  */
+@SuppressWarnings("unused")
 public enum NBTTagType {
 	END,
 	BYTE,
