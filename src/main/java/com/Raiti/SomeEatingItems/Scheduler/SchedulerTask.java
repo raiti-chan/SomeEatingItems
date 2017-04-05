@@ -89,20 +89,31 @@ public class SchedulerTask implements SchedulerRunnable {
 	private boolean isRunning = false;
 	
 	/**
-	 * Delay time until this task is executed.
+	 * This is number of loop.
+	 * If it repeats permanently it will be -1.
 	 */
-	private int startDelayTime = 0;
+	private int loopCount = 0;
 	
 	/**
 	 * The remaining number of repetitions.
-	 * If it repeats permanently it will be -1.
 	 */
 	private int remainingLoopCount = 0;
+	
+	/**
+	 * The delay time until this task is executed.
+	 */
+	private int startDelayTime = 0;
 	
 	/**
 	 * Cycle interval time.
 	 */
 	private int intervalTime = 0;
+	
+	/**
+	 * This task's delay time.
+	 * This is for start delay time and interval time countdown.
+	 */
+	private int delayTimeCount = 0;
 	
 	/**
 	 * Type of tick executed.
@@ -174,8 +185,15 @@ public class SchedulerTask implements SchedulerRunnable {
 	 * </ul>
 	 */
 	public void runTry () {
-		if (isRunning) run();
-		//TODO:インターバルタイム、スタート遅延の処理
+		if (!isRunning) return;
+		if (delayTimeCount > 0) {
+			delayTimeCount--;
+			return;
+		}
+		run();
+		delayTimeCount = intervalTime;
+		remainingLoopCount--;
+		if (remainingLoopCount <= 0) this.finish();
 	}
 	
 	/**
@@ -185,6 +203,8 @@ public class SchedulerTask implements SchedulerRunnable {
 	 * For example, if this method of a task with priority 2 is executed among tasks with priority 1, the first execution will be the next tick.
 	 */
 	public void start () {
+		delayTimeCount = startDelayTime;
+		remainingLoopCount = loopCount;
 		isRunning = true;
 	}
 	
@@ -195,6 +215,7 @@ public class SchedulerTask implements SchedulerRunnable {
 	 */
 	public void stop () {
 		isRunning = false;
+		this.stopped();
 	}
 	
 	/**
@@ -211,28 +232,22 @@ public class SchedulerTask implements SchedulerRunnable {
 	 * After the specified time (Tick) has elapsed, execution of the scheduled task is started.
 	 * But loop schedule loop cycle interval time is not this method.
 	 * It can not be changed if it is in the executable state.
-	 *
+	 * If it is already waiting for execution, this change will be applied after restart.
 	 * @param tick delay time (20tick = 1second)
-	 * @throws IllegalStateException Thrown when the delay time is about to change when in the executable state.
 	 */
 	public void setStartDelay (int tick) {
-		if (isRunning)
-			throw new IllegalStateException("The delay time can not be changed when the task is in the executable state.");
 		startDelayTime = tick;
 	}
 	
 	/**
 	 * Specify the count of loop.
 	 * If you specify a number or less 0, that is endless loop.
-	 * But the count of loop can not be changed when the task is in the executable state.
+	 * But If you change while executing or waiting for execution, it will be changed after restart.
 	 *
 	 * @param value number of loop.
-	 * @throws IllegalStateException Thrown when the count of loop is about to change when in the executable state.
 	 */
 	public void setCountOfLoop (int value) {
-		if (isRunning)
-			throw new IllegalStateException("The count of loop can not be changed when the task is in the executable state.");
-		remainingLoopCount = value <= 0 ? -1 : value;
+		loopCount = value <= 0 ? -1 : value;
 	}
 	
 	/**
