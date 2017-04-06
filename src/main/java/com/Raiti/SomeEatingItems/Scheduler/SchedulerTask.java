@@ -128,6 +128,41 @@ public class SchedulerTask implements SchedulerRunnable {
 	private final TickEvent.Phase tickEventPhase;
 	
 	/**
+	 * Allocates a new {@link SchedulerTask} object so that it has {@code runnable} as its run object.
+	 * And register to {@link ScheduleTaskRegister}.
+	 *
+	 * @param type     Type of tick executed.
+	 *                 This argument can not be null.
+	 * @param phase    The phase of the tick executed.
+	 *                 This argument can not be null.
+	 * @param priority The priority of this task.
+	 * @param runnable the object whose {@code run} method is invoked when this task is started.
+	 *                 If {@code null}, this task's run method is invoked.
+	 */
+	public SchedulerTask (@NotNull TickEvent.Type type, @NotNull TickEvent.Phase phase, byte priority, SchedulerRunnable runnable) {
+		tickEventType = type;
+		tickEventPhase = phase;
+		this.runnable = runnable;
+		this.priority = priority;
+		ScheduleTaskRegister.getRegisterInstance(type, phase).add(this);
+	}
+	
+	/**
+	 * Allocates a new {@link SchedulerTask} object.
+	 * And register to {@link ScheduleTaskRegister}.
+	 * This constructor has the same effect as {@linkplain SchedulerTask(SchedulerRunnable)}{@code (type, phase, priority, null)}.
+	 *
+	 * @param type     Type of tick executed.
+	 *                 This argument can not be null.
+	 * @param phase    The phase of the tick executed.
+	 *                 This argument can not be null.
+	 * @param priority The priority of this task.
+	 */
+	public SchedulerTask (@NotNull TickEvent.Type type, @NotNull TickEvent.Phase phase, byte priority) {
+		this(type, phase, priority, null);
+	}
+	
+	/**
 	 * Allocates a new {@link SchedulerTask} object.
 	 * And register to {@link ScheduleTaskRegister}.
 	 * This constructor has the same effect as {@linkplain SchedulerTask(SchedulerRunnable)}{@code (type, phase, 0, null)}.
@@ -139,25 +174,6 @@ public class SchedulerTask implements SchedulerRunnable {
 	 */
 	public SchedulerTask (@NotNull TickEvent.Type type, @NotNull TickEvent.Phase phase) {
 		this(type, phase, (byte) 0, null);
-	}
-	
-	/**
-	 * Allocates a new {@link SchedulerTask} object so that it has {@code runnable} as its run object.
-	 * And register to {@link ScheduleTaskRegister}.
-	 *
-	 * @param type     Type of tick executed.
-	 *                 This argument can not be null.
-	 * @param phase    The phase of the tick executed.
-	 *                 This argument can not be null.
-	 * @param runnable the object whose {@code run} method is invoked when this task is started.
-	 *                 If {@code null}, this task's run method is invoked.
-	 */
-	public SchedulerTask (@NotNull TickEvent.Type type, @NotNull TickEvent.Phase phase, byte priority, SchedulerRunnable runnable) {
-		tickEventType = type;
-		tickEventPhase = phase;
-		this.runnable = runnable;
-		this.priority = priority;
-		ScheduleTaskRegister.getRegisterInstance(type, phase).add(this);
 	}
 	
 	
@@ -233,21 +249,11 @@ public class SchedulerTask implements SchedulerRunnable {
 	 * But loop schedule loop cycle interval time is not this method.
 	 * It can not be changed if it is in the executable state.
 	 * If it is already waiting for execution, this change will be applied after restart.
+	 *
 	 * @param tick delay time (20tick = 1second)
 	 */
 	public void setStartDelay (int tick) {
 		startDelayTime = tick;
-	}
-	
-	/**
-	 * Specify the count of loop.
-	 * If you specify a number or less 0, that is endless loop.
-	 * But If you change while executing or waiting for execution, it will be changed after restart.
-	 *
-	 * @param value number of loop.
-	 */
-	public void setCountOfLoop (int value) {
-		loopCount = value <= 0 ? -1 : value;
 	}
 	
 	/**
@@ -260,6 +266,17 @@ public class SchedulerTask implements SchedulerRunnable {
 	public void setIntervalTime (int tick) throws IllegalArgumentException {
 		if (tick < 0) throw new IllegalArgumentException("Time must be a value more than or equal to 0.");
 		intervalTime = tick;
+	}
+	
+	/**
+	 * Specify the count of loop.
+	 * If you specify a number or less 0, that is endless loop.
+	 * But If you change while executing or waiting for execution, it will be changed after restart.
+	 *
+	 * @param value number of loop.
+	 */
+	public void setCountOfLoop (int value) {
+		loopCount = value <= 0 ? -1 : value;
 	}
 	
 	/**

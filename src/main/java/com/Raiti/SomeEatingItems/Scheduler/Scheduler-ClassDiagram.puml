@@ -1,0 +1,71 @@
+@startuml {Scheduler-ClassDiagram.png}
+
+package Scheduler {
+	interface SchedulerRunnable <<(F,#FFAAFF)FunctionalInterface>>{
+		{abstract} + run() : void
+		+ finish() : void
+		+ stopped() : void
+	}
+	note left
+    	run以外defaultメソッド
+    end note
+
+
+	"SchedulerRunnable" <|.down. "SchedulerTask":実現
+
+	class SchedulerTask {
+		- runnable : SchedulerRunnable = null
+		- priority : byte = 0
+		- isRunning : boolean = false
+		- loopCount : int = 0
+		- remainingLoopCount : int = 0
+		- startDelayTime : int = 0
+		- intervalTime : int = 0
+		- delayTimeCount : int = 0
+		- tickEventType : Type
+		- tickEventPhase : Phase
+
+		+ SchedulerTask(type : Type, phase : Phase, priority : byte, runnable : SchedulerRunnable) : SchedulerTask
+		+ SchedulerTask(type : Type, phase : Phase, priority : byte) : SchedulerTask
+		+ SchedulerTask(type : Type, phase : Phase) : SchedulerTask
+		+ run() : void
+		+ runTry() : void
+		+ start() : void
+		+ stop() : void
+		+ dispose() : void
+		+ setStartDelay(tick : int) : void
+		+ setIntervalTime(tick : int) : void
+		+ setCountOfLoop(value : int) : void
+		+ getPriority() : byte
+	}
+
+	class ScheduleTaskRegister {
+		..==RegisterInstance..
+		{static} - WORLD_START : ScheduleTaskRegister
+		{static} - WORLD_END : ScheduleTaskRegister
+		{static} - PLAYER_START : ScheduleTaskRegister
+		{static} - PLAYER_END : ScheduleTaskRegister
+		{static} - CLIENT_START : ScheduleTaskRegister
+		{static} - CLIENT_END : ScheduleTaskRegister
+		{static} - SERVER_START : ScheduleTaskRegister
+		{static} - SERVER_END : ScheduleTaskRegister
+		{static} - RENDER_START : ScheduleTaskRegister
+		{static} - RENDER_END : ScheduleTaskRegister
+		{static} ~ getRegisterInstance(type : Type, phase : Phase) : ScheduleTaskRegister
+		..
+		- tasks : List<SchedulerTask>
+		- buffer : List<SchedulerTask>
+		- removeBuffer : List<SchedulerTask>
+		- isChanged : boolean = false
+		__
+		{static} - adder(list : List<SchedulerTask>, task : SchedulerTask) : void
+		- ScheduleTaskRegister() : ScheduleTaskRegister
+		- applyChangesToRegister() : void
+		~ add(task : SchedulerTask) : void
+		~ remove(task : SchedulerTask) : void
+		~ run() : void
+	}
+
+	"ScheduleTaskRegister" o.r. "SchedulerTask" : 集約
+}
+@enduml

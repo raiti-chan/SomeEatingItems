@@ -23,6 +23,8 @@ import static net.minecraftforge.fml.common.gameevent.TickEvent.Phase.START;
 @SuppressWarnings("WeakerAccess")
 public class ScheduleTaskRegister {
 	
+	//==RegisterInstance================================================================================================
+	
 	/**
 	 * World tick start schedule instance.
 	 */
@@ -100,16 +102,10 @@ public class ScheduleTaskRegister {
 	//==================================================================================================================
 	
 	/**
-	 * Prohibit the creation of instances of this class.
-	 */
-	private ScheduleTaskRegister () {
-	}
-	
-	
-	/**
 	 * Task list.
 	 */
 	private List<SchedulerTask> tasks = new ArrayList<>();
+	
 	
 	/**
 	 * Add buffer.
@@ -126,28 +122,6 @@ public class ScheduleTaskRegister {
 	 * It is false when the {@link #applyChangesToRegister()} is executed.
 	 */
 	private boolean isChanged = false;
-	
-	/**
-	 * Add a task to the schedule.
-	 * But it only adds to the buffer, it is actually added after the Tick process is over.
-	 * For example, even a task with a delay of 0 will be executed on the next tick.
-	 *
-	 * @param task Task to add.
-	 */
-	void add (SchedulerTask task) {
-		adder(buffer, task);
-		isChanged = true;
-	}
-	
-	/**
-	 * Remove a task from the schedule.
-	 *
-	 * @param task Object of the task to erase
-	 */
-	void remove (SchedulerTask task) {
-		adder(removeBuffer, task);
-		isChanged = true;
-	}
 	
 	/**
 	 * Functions to add to the list in descending order of priority.
@@ -171,6 +145,12 @@ public class ScheduleTaskRegister {
 			i++;
 		}
 		if (!flag) list.add(task);
+	}
+	
+	/**
+	 * Prohibit the creation of instances of this class.
+	 */
+	private ScheduleTaskRegister () {
 	}
 	
 	/**
@@ -217,6 +197,28 @@ public class ScheduleTaskRegister {
 			buffer.clear();
 		}
 		isChanged = false;
+	}
+	
+	/**
+	 * Add a task to the schedule.
+	 * But it only adds to the buffer, it is actually added after the Tick process is over.
+	 * For example, even a task with a delay of 0 will be executed on the next tick.
+	 *
+	 * @param task Task to add.
+	 */
+	void add (SchedulerTask task) {
+		adder(buffer, task);
+		isChanged = true;
+	}
+	
+	/**
+	 * Remove a task from the schedule.
+	 *
+	 * @param task Object of the task to erase
+	 */
+	void remove (SchedulerTask task) {
+		adder(removeBuffer, task);
+		isChanged = true;
 	}
 	
 	/**
