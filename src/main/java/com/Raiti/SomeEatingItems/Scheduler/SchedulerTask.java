@@ -104,7 +104,7 @@ public class SchedulerTask implements SchedulerRunnable {
 	 * This is number of loop.
 	 * If it repeats permanently it will be -1.
 	 */
-	private int loopCount = 0;
+	private int loopCount = 1;
 	
 	/**
 	 * The delay time until this task is executed.
@@ -213,6 +213,7 @@ public class SchedulerTask implements SchedulerRunnable {
 		}
 		run();
 		delayTimeCount = intervalTime;
+		if (loopCount == -1) return;
 		remainingLoopCount--;
 		if (remainingLoopCount <= 0) this.finish();
 	}

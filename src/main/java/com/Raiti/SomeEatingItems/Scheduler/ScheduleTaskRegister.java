@@ -156,13 +156,11 @@ public class ScheduleTaskRegister {
 	 * Apply changes to Register.
 	 */
 	private void applyChangesToRegister () {
+		tasks.removeAll(removeBuffer);
 		if (this.tasks.isEmpty()) { //タスクが空の場合
 			this.tasks = this.buffer; //空なのでそのままバッファを入れる
 			this.buffer = new ArrayList<>(); //バッファは新しいリストに
 		} else { //タスクが既に存在していた場合
-			final Iterator<SchedulerTask> removeIterator = removeBuffer.iterator(); //消去するタスクのイテレータ取得
-			final Supplier<SchedulerTask> nextRemoveObject = () -> removeIterator.hasNext() ? removeIterator.next() : null; //関数オブジェクト
-			SchedulerTask removeTask = nextRemoveObject.get(); //消去するタスクの一つ目取得
 			List<SchedulerTask> buf = new ArrayList<>(); //一時的なバッファを作成
 			int bufferIndex = 0, taskIndex = 0; //バッファとタスクのインデックス
 			final int bufferSize = this.buffer.size(), taskSize = this.tasks.size(); //バッファとタスクのサイズ
@@ -175,9 +173,7 @@ public class ScheduleTaskRegister {
 					buf.add(bufTask);
 					bufferIndex++;
 				} else {
-					if (removeTask == task)
-						removeTask = nextRemoveObject.get(); //removeに同じオブジェクトが存在していたら追加しないで消去タスクを次へ
-					else buf.add(task); //バッファへ追加
+					buf.add(task); //バッファへ追加
 					taskIndex++;
 				}
 				
@@ -187,13 +183,12 @@ public class ScheduleTaskRegister {
 				bufferIndex++;
 			}
 			while (taskIndex < taskSize) {
-				SchedulerTask task = this.tasks.get(taskIndex);
-				if (removeTask == task) removeTask = nextRemoveObject.get(); //removeに同じオブジェクトが存在していたら追加しないで消去タスクを次へ
-				else buf.add(task);
+				buf.add(this.tasks.get(taskIndex));
 				taskIndex++;
 			}
 			tasks = buf;
 			buffer.clear();
+			removeBuffer.clear();
 		}
 		isChanged = false;
 	}

@@ -1,19 +1,15 @@
 package com.Raiti.SomeEatingItems;
 
 import com.Raiti.SomeEatingItems.Packet.PacketHander;
+import com.Raiti.SomeEatingItems.Scheduler.SchedulerRunner;
 import com.Raiti.SomeEatingItems.Server.CommonProxy;
-
-import net.minecraft.stats.StatList;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.ModMetadata;
 import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 
 /**
  * MainClass.<br>
@@ -81,7 +77,7 @@ public class SomeEatingItems {
 	@Mod.EventHandler
 	public void postInit (FMLPostInitializationEvent event) {
 		MinecraftForge.EVENT_BUS.register(new ForgeEventHook());
-		
+		SchedulerRunner.schedulerInitialize();
 	}
 	
 	/**

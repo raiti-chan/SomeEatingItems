@@ -2,7 +2,11 @@ package com.Raiti.SomeEatingItems;
 
 import java.util.Random;
 
+import com.Raiti.SomeEatingItems.Scheduler.SchedulerTask;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.item.EntityFireworkRocket;
+import net.minecraft.entity.item.EntityTNTPrimed;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -11,6 +15,8 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.Vec3d;
 
+import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.Cancelable;
@@ -19,6 +25,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import com.Raiti.SomeEatingItems.Packet.EatingItemStartMessage;
 import com.Raiti.SomeEatingItems.Packet.EatingItemStopMessage;
 import com.Raiti.SomeEatingItems.Packet.PacketHander;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 /**
  * ForgeEventFactory's EVENT_BUS on hook.
@@ -29,13 +36,13 @@ import com.Raiti.SomeEatingItems.Packet.PacketHander;
  * @since 1.0.0
  */
 @SuppressWarnings("unused")
-@Cancelable
 public class ForgeEventHook {
 	
 	/**
 	 * Random.
 	 */
 	private Random random = new Random();
+	
 	
 	/**
 	 * This event occurs when player was right click.
@@ -45,10 +52,12 @@ public class ForgeEventHook {
 	@SubscribeEvent
 	public void onRightClickItem (PlayerInteractEvent.RightClickItem event) {
 		if (!event.getWorld().isRemote) return; //サーバー側の処理はさせないっ!!
-		if (FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound()) == null) return; //タグが無かったら(null)無視
+		if (FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound()) == null)
+			return; //タグが無かったら(null)無視
 		event.getEntityLiving().setActiveHand(event.getHand()); //アイテムを使用している状態へ
 		PacketHander.INSTANCE.sendToServer(new EatingItemStartMessage()); // サーバーへ通知
 		event.setCanceled(true);
+		event.getEntityLiving().sendMessage(new TextComponentString("RightClick!"));
 	}
 	
 	/**
