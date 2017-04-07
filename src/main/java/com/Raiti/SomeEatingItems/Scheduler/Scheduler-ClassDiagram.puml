@@ -15,28 +15,42 @@ package Scheduler {
 
 	class SchedulerTask {
 		- runnable : SchedulerRunnable = null
+		- tickEventType : Type
+		- tickEventPhase : Phase
 		- priority : byte = 0
 		- isRunning : boolean = false
 		- loopCount : int = 0
-		- remainingLoopCount : int = 0
 		- startDelayTime : int = 0
 		- intervalTime : int = 0
+		- remainingLoopCount : int = 0
 		- delayTimeCount : int = 0
-		- tickEventType : Type
-		- tickEventPhase : Phase
 
 		+ SchedulerTask(type : Type, phase : Phase, priority : byte, runnable : SchedulerRunnable) : SchedulerTask
 		+ SchedulerTask(type : Type, phase : Phase, priority : byte) : SchedulerTask
 		+ SchedulerTask(type : Type, phase : Phase) : SchedulerTask
 		+ run() : void
+		+ finish : void
 		+ runTry() : void
 		+ start() : void
 		+ stop() : void
 		+ dispose() : void
+		+ increaseDelayTime(tick : int) : void
+		+ decreaseDelayTime(tick : int) : void
+		+ delayTimeTo0() : void
+		+ increaseRemainingLoopCount(count : int) : void
+		+ decreaseRemainingLoopCount(count : int) : void
+		+ RemainingLoopCountTo0(): void
 		+ setStartDelay(tick : int) : void
 		+ setIntervalTime(tick : int) : void
-		+ setCountOfLoop(value : int) : void
+		+ setLoopCount(value : int) : void
 		+ getPriority() : byte
+		+ isRunning() : boolean
+		+ getLoopCount() : int
+		+ getStartDelayTime() : int
+		+ getIntervalTime() : int
+		+ getRemainingLoopCount() : int
+		+ getDelayTimeCount() : int
+
 	}
 
 	class ScheduleTaskRegister {

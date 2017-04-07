@@ -76,7 +76,19 @@ public class SchedulerTask implements SchedulerRunnable {
 	/**
 	 * What will be run.
 	 */
-	private SchedulerRunnable runnable = null;
+	private final SchedulerRunnable runnable;
+	
+	/**
+	 * Type of tick executed.
+	 */
+	@NotNull
+	private final TickEvent.Type tickEventType;
+	
+	/**
+	 * The phase of the tick executed.
+	 */
+	@NotNull
+	private final TickEvent.Phase tickEventPhase;
 	
 	/**
 	 * Task priority.
@@ -95,11 +107,6 @@ public class SchedulerTask implements SchedulerRunnable {
 	private int loopCount = 0;
 	
 	/**
-	 * The remaining number of repetitions.
-	 */
-	private int remainingLoopCount = 0;
-	
-	/**
 	 * The delay time until this task is executed.
 	 */
 	private int startDelayTime = 0;
@@ -110,22 +117,15 @@ public class SchedulerTask implements SchedulerRunnable {
 	private int intervalTime = 0;
 	
 	/**
+	 * The remaining number of repetitions.
+	 */
+	private int remainingLoopCount = 0;
+	
+	/**
 	 * This task's delay time.
 	 * This is for start delay time and interval time countdown.
 	 */
 	private int delayTimeCount = 0;
-	
-	/**
-	 * Type of tick executed.
-	 */
-	@NotNull
-	private final TickEvent.Type tickEventType;
-	
-	/**
-	 * The phase of the tick executed.
-	 */
-	@NotNull
-	private final TickEvent.Phase tickEventPhase;
 	
 	/**
 	 * Allocates a new {@link SchedulerTask} object so that it has {@code runnable} as its run object.
@@ -140,8 +140,8 @@ public class SchedulerTask implements SchedulerRunnable {
 	 *                 If {@code null}, this task's run method is invoked.
 	 */
 	public SchedulerTask (@NotNull TickEvent.Type type, @NotNull TickEvent.Phase phase, byte priority, SchedulerRunnable runnable) {
-		tickEventType = type;
-		tickEventPhase = phase;
+		this.tickEventType = type;
+		this.tickEventPhase = phase;
 		this.runnable = runnable;
 		this.priority = priority;
 		ScheduleTaskRegister.getRegisterInstance(type, phase).add(this);
@@ -185,9 +185,14 @@ public class SchedulerTask implements SchedulerRunnable {
 	 */
 	@Override
 	public void run () {
-		if (runnable != null) {
-			runnable.run();
+		if (this.runnable != null) {
+			this.runnable.run();
 		}
+	}
+	
+	@Override
+	public void finish () {
+		this.dispose();
 	}
 	
 	/**
@@ -242,6 +247,52 @@ public class SchedulerTask implements SchedulerRunnable {
 		ScheduleTaskRegister.getRegisterInstance(this.tickEventType, this.tickEventPhase).remove(this);
 	}
 	
+	/**
+	 * Increase current delay time.
+	 * @param tick time. (20tick = 1second)
+	 */
+	public void increaseDelayTime (int tick) {
+		delayTimeCount += tick;
+	}
+	
+	/**
+	 * Decrease current delay time.
+	 * @param tick time. (20tick = 1second)
+	 */
+	public void decreaseDelayTime (int tick) {
+		delayTimeCount -= tick;
+	}
+	
+	/**
+	 * Set the delay time to 0.
+	 */
+	public void delayTimeTo0 () {
+		delayTimeCount = 0;
+	}
+	
+	/**
+	 * Increase current remaining loop count.
+	 * @param count count.
+	 */
+	public void increaseRemainingLoopCount (int count) {
+		remainingLoopCount += count;
+	}
+	
+	/**
+	 * Decrease current remaining loop count.
+	 * @param count count.
+	 */
+	public void decreaseRemainingLoopCount (int count) {
+		remainingLoopCount -= count;
+	}
+	
+	/**
+	 * Set the remaining loop count to 0.
+	 */
+	public void remainingLoopCountTo0 () {
+		remainingLoopCount = 0;
+	}
+	
 	
 	/**
 	 * Specify the delay time before the task is started
@@ -258,7 +309,7 @@ public class SchedulerTask implements SchedulerRunnable {
 	
 	/**
 	 * Specify to cycle interval time.
-	 *
+	 * If it is waiting for execution, it will be applied in the next cycle.
 	 * @param tick This value must be a value more than or equal to 0.
 	 *             If you specify a number less than 0, an {@link IllegalArgumentException} will be thrown.
 	 * @throws IllegalArgumentException Thrown if the argument is less than or equal to 0.
@@ -275,7 +326,7 @@ public class SchedulerTask implements SchedulerRunnable {
 	 *
 	 * @param value number of loop.
 	 */
-	public void setCountOfLoop (int value) {
+	public void setLoopCount (int value) {
 		loopCount = value <= 0 ? -1 : value;
 	}
 	
@@ -288,4 +339,51 @@ public class SchedulerTask implements SchedulerRunnable {
 		return this.priority;
 	}
 	
+	/**
+	 * Get {@link #isRunning}.
+	 * @return boolean value of {@link #isRunning}
+	 */
+	public boolean isRunning () {
+		return isRunning;
+	}
+	
+	/**
+	 * Get {@link #loopCount}.
+	 * @return value of {@link #loopCount}
+	 */
+	public int getLoopCount () {
+		return loopCount;
+	}
+	
+	/**
+	 * Get {@link #startDelayTime}.
+	 * @return value of {@link #startDelayTime}
+	 */
+	public int getStartDelayTime () {
+		return startDelayTime;
+	}
+	
+	/**
+	 * Get {@link #intervalTime}.
+	 * @return value of {@link #intervalTime}
+	 */
+	public int getIntervalTime () {
+		return intervalTime;
+	}
+	
+	/**
+	 * Get {@link #remainingLoopCount}.
+	 * @return value of {@link #remainingLoopCount}
+	 */
+	public int getRemainingLoopCount () {
+		return remainingLoopCount;
+	}
+	
+	/**
+	 * Get {@link #delayTimeCount}.
+	 * @return value of {@link #delayTimeCount}.
+	 */
+	public int getDelayTimeCount () {
+		return delayTimeCount;
+	}
 }

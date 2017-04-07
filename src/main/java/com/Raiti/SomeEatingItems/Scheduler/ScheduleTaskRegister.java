@@ -106,7 +106,6 @@ public class ScheduleTaskRegister {
 	 */
 	private List<SchedulerTask> tasks = new ArrayList<>();
 	
-	
 	/**
 	 * Add buffer.
 	 */
