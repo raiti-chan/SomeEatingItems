@@ -106,7 +106,8 @@ public class ForgeEventHook {
 	 */
 	@SubscribeEvent
 	public void onPlayerUseItem_Stop (LivingEntityUseItemEvent.Stop event) {
-		if (event.getEntityLiving().world.isRemote) PacketHander.INSTANCE.sendToServer(new EatingItemStopMessage());
+		if (event.getEntityLiving().world.isRemote && FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItem().getTagCompound()) != null)
+			PacketHander.INSTANCE.sendToServer(new EatingItemStopMessage());
 	}
 	
 	/**
