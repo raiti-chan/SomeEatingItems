@@ -70,7 +70,7 @@ import org.jetbrains.annotations.NotNull;
  * @see #setStartDelay(int)
  * @since 1.0.0
  */
-@SuppressWarnings({"WeakerAccess", "unused"})
+@SuppressWarnings({"WeakerAccess", "unused", "SameParameterValue"})
 public class SchedulerTask implements SchedulerRunnable {
 	
 	/**
@@ -192,7 +192,16 @@ public class SchedulerTask implements SchedulerRunnable {
 	
 	@Override
 	public void finish () {
-		this.dispose();
+		if (this.runnable != null) {
+			this.runnable.finish();
+		}
+	}
+	
+	@Override
+	public void stopped () {
+		if (this.runnable != null) {
+			this.runnable.stopped();
+		}
 	}
 	
 	/**
@@ -205,7 +214,7 @@ public class SchedulerTask implements SchedulerRunnable {
 	 * <li>The {@link #isRunning} field is false.</li>
 	 * </ul>
 	 */
-	public void runTry () {
+	protected void runTry () {
 		if (!isRunning) return;
 		if (delayTimeCount > 0) {
 			delayTimeCount--;
@@ -215,7 +224,10 @@ public class SchedulerTask implements SchedulerRunnable {
 		delayTimeCount = intervalTime;
 		if (loopCount == -1) return;
 		remainingLoopCount--;
-		if (remainingLoopCount <= 0) this.finish();
+		if (remainingLoopCount <= 0) {
+			this.finish();
+			this.dispose();
+		}
 	}
 	
 	/**

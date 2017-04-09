@@ -76,7 +76,7 @@ public class ScheduleTaskRegister {
 	/**
 	 * Prohibit the creation of instances of this class.
 	 */
-	ScheduleTaskRegister () {
+	protected ScheduleTaskRegister () {
 	}
 	
 	/**
@@ -127,7 +127,7 @@ public class ScheduleTaskRegister {
 	 *
 	 * @param task Task to add.
 	 */
-	void add (SchedulerTask task) {
+	protected void add (SchedulerTask task) {
 		adder(buffer, task);
 		isChanged = true;
 	}
@@ -137,7 +137,7 @@ public class ScheduleTaskRegister {
 	 *
 	 * @param task Object of the task to erase
 	 */
-	void remove (SchedulerTask task) {
+	protected void remove (SchedulerTask task) {
 		adder(removeBuffer, task);
 		isChanged = true;
 	}
@@ -146,7 +146,8 @@ public class ScheduleTaskRegister {
 	 * Clear to register.
 	 * This method also remove changes to the register.
 	 */
-	void clear () {
+	@SuppressWarnings("unused")
+	protected void clear () {
 		clearFlag = true;
 	}
 	
@@ -155,7 +156,7 @@ public class ScheduleTaskRegister {
 	 * It is not recommended to run this method arbitrarily.
 	 * Normally, this method is executed at a predetermined timing.
 	 */
-	void run () {
+	protected void run () {
 		this.tasks.forEach(SchedulerTask::runTry);//登録されているスケジュールを実行
 		if (clearFlag) {
 			tasks.clear();

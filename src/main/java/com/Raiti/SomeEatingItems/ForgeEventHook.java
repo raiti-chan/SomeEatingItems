@@ -36,6 +36,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
  * @since 1.0.0
  */
 @SuppressWarnings("unused")
+@Cancelable
 public class ForgeEventHook {
 	
 	/**
@@ -57,7 +58,6 @@ public class ForgeEventHook {
 		event.getEntityLiving().setActiveHand(event.getHand()); //アイテムを使用している状態へ
 		PacketHander.INSTANCE.sendToServer(new EatingItemStartMessage()); // サーバーへ通知
 		event.setCanceled(true);
-		event.getEntityLiving().sendMessage(new TextComponentString("RightClick!"));
 	}
 	
 	/**
@@ -110,62 +110,6 @@ public class ForgeEventHook {
 			PacketHander.INSTANCE.sendToServer(new EatingItemStopMessage());
 	}
 	
-	/**
-	 * This method occurs finished item use.
-	 *
-	 * @param entity player.
-	 * @param stack  used item.
-	 */
-	private void onPlayerUseItem_Finish (EntityLivingBase entity, ItemStack stack) {
-		int count = stack.getCount();
-		updateItemUse(entity, stack, 16);
-		stack.shrink(1);
-		entity.world.playSound(null, entity.posX, entity.posY, entity.posZ, SoundEvents.ENTITY_PLAYER_BURP, SoundCategory.PLAYERS, 0.5F, entity.world.rand.nextFloat() * 0.1F + 0.9F);
-		onEaten(stack);
-		entity.resetActiveHand();
-		entity.setHeldItem(entity.getActiveHand(), stack);
-		//統計情報を追加するかも？
-		
-	}
 	
-	/**
-	 * Update to Sound and Particle.
-	 *
-	 * @param entity              player.
-	 * @param stack               item.
-	 * @param eatingParticleCount particle count.
-	 */
-	@SuppressWarnings("SameParameterValue")
-	private void updateItemUse (EntityLivingBase entity, ItemStack stack, int eatingParticleCount) {
-		for (int i = 0; i < eatingParticleCount; i++) { //パーティクルの計算
-			Vec3d vec3d = new Vec3d(((double) this.random.nextFloat() - 0.5D) * 0.1D, Math.random() * 0.1D + 0.1D, 0.0D);
-			vec3d = vec3d.rotatePitch(-entity.rotationPitch * 0.017453292F);
-			vec3d = vec3d.rotateYaw(-entity.rotationYaw * 0.017453292F);
-			double d0 = (double) (-this.random.nextFloat()) * 0.6D - 0.3D;
-			Vec3d vec3d1 = new Vec3d(((double) this.random.nextFloat() - 0.5D) * 0.3D, d0, 0.6D);
-			vec3d1 = vec3d1.rotatePitch(-entity.rotationPitch * 0.017453292F);
-			vec3d1 = vec3d1.rotateYaw(-entity.rotationYaw * 0.017453292F);
-			vec3d1 = vec3d1.addVector(entity.posX, entity.posY + (double) entity.getEyeHeight(), entity.posZ);
-			
-			if (stack.getHasSubtypes()) //アイテムがメタデータを持っている場合
-				entity.world.spawnParticle(EnumParticleTypes.ITEM_CRACK, vec3d1.xCoord, vec3d1.yCoord, vec3d1.zCoord, vec3d.xCoord, vec3d.yCoord + 0.05D, vec3d.zCoord,
-						Item.getIdFromItem(stack.getItem()), stack.getMetadata()); //パーティクルの発生
-			else //無い場合
-				entity.world.spawnParticle(EnumParticleTypes.ITEM_CRACK, vec3d1.xCoord, vec3d1.yCoord, vec3d1.zCoord, vec3d.xCoord, vec3d.yCoord + 0.05D, vec3d.zCoord,
-						Item.getIdFromItem(stack.getItem())); //パーティクルの発生
-		}
-		
-		entity.playSound(SoundEvents.ENTITY_GENERIC_EAT, 0.5F + 0.5F * (float) this.random.nextInt(2), (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
-		//音を鳴らす
-	}
-	
-	/**
-	 * On eat.<br>
-	 * Add a effect to player.
-	 *
-	 * @param stack eat item.
-	 */
-	private void onEaten (ItemStack stack) {
-		
-	}
+
 }

@@ -23,16 +23,16 @@ public class PlayerSchedulerTask extends SchedulerTask {
 	 * Allocates a new {@link PlayerSchedulerTask} object so that it has {@code runnable} as its run object.
 	 * And register to {@link ScheduleTaskRegister}.
 	 *
-	 * @param type     Type of tick executed.
-	 *                 This argument can not be null.
 	 * @param phase    The phase of the tick executed.
+	 *                 This argument can not be null.
+	 * @param player   The player of the bind this event.
 	 *                 This argument can not be null.
 	 * @param priority The priority of this task.
 	 * @param runnable the object whose {@code run} method is invoked when this task is started.
 	 *                 If {@code null}, this task's run method is invoked.
 	 */
-	public PlayerSchedulerTask (@NotNull TickEvent.Type type, @NotNull TickEvent.Phase phase, @NotNull EntityPlayer player, byte priority, SchedulerRunnable runnable) {
-		super(type, phase, priority, runnable);
+	public PlayerSchedulerTask (@NotNull TickEvent.Phase phase, @NotNull EntityPlayer player, byte priority, SchedulerRunnable runnable) {
+		super(TickEvent.Type.PLAYER, phase, priority, runnable);
 		this.player = player;
 	}
 	
@@ -41,14 +41,14 @@ public class PlayerSchedulerTask extends SchedulerTask {
 	 * And register to {@link ScheduleTaskRegister}.
 	 * This constructor has the same effect as {@linkplain PlayerSchedulerTask(SchedulerRunnable)}{@code (type, phase, priority, null)}.
 	 *
-	 * @param type     Type of tick executed.
-	 *                 This argument can not be null.
 	 * @param phase    The phase of the tick executed.
+	 *                 This argument can not be null.
+	 * @param player   The player of the bind this event.
 	 *                 This argument can not be null.
 	 * @param priority The priority of this task.
 	 */
-	public PlayerSchedulerTask (@NotNull TickEvent.Type type, @NotNull TickEvent.Phase phase, @NotNull EntityPlayer player, byte priority) {
-		this(type, phase, player, priority, null);
+	public PlayerSchedulerTask (@NotNull TickEvent.Phase phase, @NotNull EntityPlayer player, byte priority) {
+		this(phase, player, priority, null);
 	}
 	
 	/**
@@ -56,20 +56,18 @@ public class PlayerSchedulerTask extends SchedulerTask {
 	 * And register to {@link ScheduleTaskRegister}.
 	 * This constructor has the same effect as {@linkplain PlayerSchedulerTask(SchedulerRunnable)}{@code (type, phase, 0, null)}.
 	 *
-	 * @param type  Type of tick executed.
-	 *              This argument can not be null.
-	 * @param phase The phase of the tick executed.
+	 * @param phase  The phase of the tick executed.
+	 * @param player The player of the bind this event.
+	 *               This argument can not be null.
 	 */
-	public PlayerSchedulerTask (@NotNull TickEvent.Type type, @NotNull TickEvent.Phase phase, @NotNull EntityPlayer player) {
-		this(type, phase, player, (byte) 0, null);
+	public PlayerSchedulerTask (@NotNull TickEvent.Phase phase, @NotNull EntityPlayer player) {
+		this(phase, player, (byte) 0, null);
 	}
 	
 	
 	public EntityPlayer getPlayer () {
 		return player;
 	}
-	
-	
 	
 	
 }

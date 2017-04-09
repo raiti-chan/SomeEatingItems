@@ -16,6 +16,7 @@ import static net.minecraftforge.fml.common.gameevent.TickEvent.Phase.START;
  * @version 1.0.0
  * @since 1.0.0
  */
+@SuppressWarnings("WeakerAccess")
 public class SchedulerRunner {
 	
 	
@@ -24,52 +25,52 @@ public class SchedulerRunner {
 	/**
 	 * World tick start schedule instance.
 	 */
-	private static final ScheduleTaskRegister WORLD_START = new ScheduleTaskRegister();
+	public static final ScheduleTaskRegister WORLD_START = new ScheduleTaskRegister();
 	
 	/**
 	 * World tick end schedule instance.
 	 */
-	private static final ScheduleTaskRegister WORLD_END = new ScheduleTaskRegister();
+	public static final ScheduleTaskRegister WORLD_END = new ScheduleTaskRegister();
 	
 	/**
 	 * Player tick start schedule instance.
 	 */
-	private static final PlayerScheduleTaskRegister PLAYER_START = new PlayerScheduleTaskRegister();
+	public static final PlayerScheduleTaskRegister PLAYER_START = new PlayerScheduleTaskRegister();
 	
 	/**
 	 * Player tick end schedule instance.
 	 */
-	private static final PlayerScheduleTaskRegister PLAYER_END = new PlayerScheduleTaskRegister();
+	public static final PlayerScheduleTaskRegister PLAYER_END = new PlayerScheduleTaskRegister();
 	
 	/**
 	 * Client Tick start schedule instance.
 	 */
-	private static final ScheduleTaskRegister CLIENT_START = new ScheduleTaskRegister();
+	public static final ScheduleTaskRegister CLIENT_START = new ScheduleTaskRegister();
 	
 	/**
 	 * Client Tick end schedule instance.
 	 */
-	private static final ScheduleTaskRegister CLIENT_END = new ScheduleTaskRegister();
+	public static final ScheduleTaskRegister CLIENT_END = new ScheduleTaskRegister();
 	
 	/**
 	 * Server Tick start schedule instance.
 	 */
-	private static final ScheduleTaskRegister SERVER_START = new ScheduleTaskRegister();
+	public static final ScheduleTaskRegister SERVER_START = new ScheduleTaskRegister();
 	
 	/**
 	 * Server Tick end schedule instance.
 	 */
-	private static final ScheduleTaskRegister SERVER_END = new ScheduleTaskRegister();
+	public static final ScheduleTaskRegister SERVER_END = new ScheduleTaskRegister();
 	
 	/**
 	 * Render Tick start schedule instance.
 	 */
-	private static final ScheduleTaskRegister RENDER_START = new ScheduleTaskRegister();
+	public static final ScheduleTaskRegister RENDER_START = new ScheduleTaskRegister();
 	
 	/**
 	 * Render Tick end schedule instance.
 	 */
-	private static final ScheduleTaskRegister RENDER_END = new ScheduleTaskRegister();
+	public static final ScheduleTaskRegister RENDER_END = new ScheduleTaskRegister();
 	
 	/**
 	 * Get the instance of Register.
@@ -79,7 +80,7 @@ public class SchedulerRunner {
 	 * @return Register instance.
 	 */
 	@NotNull
-	static ScheduleTaskRegister getRegisterInstance (@NotNull TickEvent.Type type, @NotNull TickEvent.Phase phase) {
+	public static ScheduleTaskRegister getRegisterInstance (@NotNull TickEvent.Type type, @NotNull TickEvent.Phase phase) {
 		switch (type) {
 			case WORLD:
 				return phase == START ? WORLD_START : WORLD_END;

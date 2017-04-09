@@ -1,5 +1,8 @@
 package com.Raiti.SomeEatingItems.Packet;
 
+import com.Raiti.SomeEatingItems.Client.EatingItemFinishMessageHandler;
+import com.Raiti.SomeEatingItems.Server.EatingItemStartMessageHandler;
+import com.Raiti.SomeEatingItems.Server.EatingItemStopMessageHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;

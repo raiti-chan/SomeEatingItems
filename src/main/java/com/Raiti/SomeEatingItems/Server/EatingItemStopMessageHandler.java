@@ -1,5 +1,7 @@
-package com.Raiti.SomeEatingItems.Packet;
+package com.Raiti.SomeEatingItems.Server;
 
+import com.Raiti.SomeEatingItems.Packet.EatingItemStopMessage;
+import com.Raiti.SomeEatingItems.Scheduler.SchedulerRunner;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -11,7 +13,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
  * @version 1.0.0
  * @since 1.0.0
  */
-public class EatingItemFinishMessageHandler implements IMessageHandler<EatingItemFinishMessage, IMessage> {
+public class EatingItemStopMessageHandler implements IMessageHandler<EatingItemStopMessage, IMessage>{
 	
 	/**
 	 * Called when a message is received of the appropriate type. You can optionally return a reply message, or null if no reply
@@ -22,7 +24,11 @@ public class EatingItemFinishMessageHandler implements IMessageHandler<EatingIte
 	 * @return an optional return message
 	 */
 	@Override
-	public IMessage onMessage (EatingItemFinishMessage message, MessageContext ctx) {
+	public IMessage onMessage (EatingItemStopMessage message, MessageContext ctx) {
+		SchedulerRunner.PLAYER_END.getPlayerTasks(ctx.getServerHandler().playerEntity).forEach(playerSchedulerTask -> {
+			if (playerSchedulerTask instanceof EatingTask) playerSchedulerTask.stop();
+		});
 		return null;
 	}
+
 }
