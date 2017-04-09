@@ -144,7 +144,7 @@ public class SchedulerTask implements SchedulerRunnable {
 		this.tickEventPhase = phase;
 		this.runnable = runnable;
 		this.priority = priority;
-		ScheduleTaskRegister.getRegisterInstance(type, phase).add(this);
+		SchedulerRunner.getRegisterInstance(type, phase).add(this);
 	}
 	
 	/**
@@ -245,7 +245,7 @@ public class SchedulerTask implements SchedulerRunnable {
 	 * Remove a task from {@link ScheduleTaskRegister} when executed this method.
 	 */
 	public void dispose () {
-		ScheduleTaskRegister.getRegisterInstance(this.tickEventType, this.tickEventPhase).remove(this);
+		SchedulerRunner.getRegisterInstance(this.tickEventType, this.tickEventPhase).remove(this);
 	}
 	
 	/**

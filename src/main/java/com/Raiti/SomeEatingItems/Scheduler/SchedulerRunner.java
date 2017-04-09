@@ -2,7 +2,11 @@ package com.Raiti.SomeEatingItems.Scheduler;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import org.jetbrains.annotations.NotNull;
+
+import static net.minecraftforge.fml.common.gameevent.TickEvent.Phase.START;
 
 /**
  * Forge's tick event handler.
@@ -14,6 +18,87 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
  */
 public class SchedulerRunner {
 	
+	
+	//==RegisterInstance================================================================================================
+	
+	/**
+	 * World tick start schedule instance.
+	 */
+	private static final ScheduleTaskRegister WORLD_START = new ScheduleTaskRegister();
+	
+	/**
+	 * World tick end schedule instance.
+	 */
+	private static final ScheduleTaskRegister WORLD_END = new ScheduleTaskRegister();
+	
+	/**
+	 * Player tick start schedule instance.
+	 */
+	private static final PlayerScheduleTaskRegister PLAYER_START = new PlayerScheduleTaskRegister();
+	
+	/**
+	 * Player tick end schedule instance.
+	 */
+	private static final PlayerScheduleTaskRegister PLAYER_END = new PlayerScheduleTaskRegister();
+	
+	/**
+	 * Client Tick start schedule instance.
+	 */
+	private static final ScheduleTaskRegister CLIENT_START = new ScheduleTaskRegister();
+	
+	/**
+	 * Client Tick end schedule instance.
+	 */
+	private static final ScheduleTaskRegister CLIENT_END = new ScheduleTaskRegister();
+	
+	/**
+	 * Server Tick start schedule instance.
+	 */
+	private static final ScheduleTaskRegister SERVER_START = new ScheduleTaskRegister();
+	
+	/**
+	 * Server Tick end schedule instance.
+	 */
+	private static final ScheduleTaskRegister SERVER_END = new ScheduleTaskRegister();
+	
+	/**
+	 * Render Tick start schedule instance.
+	 */
+	private static final ScheduleTaskRegister RENDER_START = new ScheduleTaskRegister();
+	
+	/**
+	 * Render Tick end schedule instance.
+	 */
+	private static final ScheduleTaskRegister RENDER_END = new ScheduleTaskRegister();
+	
+	/**
+	 * Get the instance of Register.
+	 *
+	 * @param type  tick event type.
+	 * @param phase event phase.
+	 * @return Register instance.
+	 */
+	@NotNull
+	static ScheduleTaskRegister getRegisterInstance (@NotNull TickEvent.Type type, @NotNull TickEvent.Phase phase) {
+		switch (type) {
+			case WORLD:
+				return phase == START ? WORLD_START : WORLD_END;
+			case PLAYER:
+				return phase == START ? PLAYER_START : PLAYER_END;
+			case CLIENT:
+				return phase == START ? CLIENT_START : CLIENT_END;
+			case SERVER:
+				return phase == START ? SERVER_START : SERVER_END;
+			case RENDER:
+				return phase == START ? RENDER_START : RENDER_END;
+		}
+		return null;
+	}
+	
+	//==================================================================================================================
+	
+	
+	
 	private static boolean isInitialized = false;
 	
 	public static void schedulerInitialize () {
@@ -24,20 +109,6 @@ public class SchedulerRunner {
 	
 	private SchedulerRunner(){}
 	
-	
-	/**
-	 * World Tick Event.<br>
-	 * Occours when TickStart and TickEnd.
-	 *
-	 * @param event Tick event.
-	 */
-	@SuppressWarnings("unused")
-	@SubscribeEvent
-	public void worldTickEvent (TickEvent.WorldTickEvent event) {
-		ScheduleTaskRegister.getRegisterInstance(event.type, event.phase).run();
-	}
-	
-	
 	/**
 	 * Player Tick Event.<br>
 	 * Occours when TickStart and TickEnd.
@@ -47,20 +118,17 @@ public class SchedulerRunner {
 	@SuppressWarnings("unused")
 	@SubscribeEvent
 	public void playerTickEvent (TickEvent.PlayerTickEvent event) {
-		ScheduleTaskRegister.getRegisterInstance(event.type, event.phase).run();
+		//Server and client.
+		if (event.player.getEntityWorld().isRemote) return;
+		getRegisterInstance(event.type, event.phase).run();
+		//Server only.
 	}
 	
-	
-	/**
-	 * Client Tick Event.<br>
-	 * Occours when TickStart and TickEnd.
-	 *
-	 * @param event Tick event.
-	 */
 	@SuppressWarnings("unused")
 	@SubscribeEvent
-	public void clientTickEvent (TickEvent.ClientTickEvent event) {
-		ScheduleTaskRegister.getRegisterInstance(event.type, event.phase).run();
+	public void playerLoggedOutEvent (PlayerEvent.PlayerLoggedOutEvent event) {
+		PLAYER_START.clear(event.player);
+		PLAYER_END.clear(event.player);
 	}
 	
 	/**
@@ -72,20 +140,7 @@ public class SchedulerRunner {
 	@SuppressWarnings("unused")
 	@SubscribeEvent
 	public void serverTickEvent (TickEvent.ServerTickEvent event) {
-		ScheduleTaskRegister.getRegisterInstance(event.type, event.phase).run();
-	}
-	
-	
-	/**
-	 * Render Tick Event.<br>
-	 * Occours when TickStart and TickEnd.
-	 *
-	 * @param event Tick event.
-	 */
-	@SuppressWarnings("unused")
-	@SubscribeEvent
-	public void renderTickEvent (TickEvent.RenderTickEvent event) {
-		ScheduleTaskRegister.getRegisterInstance(event.type, event.phase).run();
+		getRegisterInstance(event.type, event.phase).run();
 	}
 	
 	

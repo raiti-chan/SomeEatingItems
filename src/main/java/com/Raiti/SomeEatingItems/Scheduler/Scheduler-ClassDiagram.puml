@@ -71,6 +71,7 @@ package Scheduler {
 		- buffer : List<SchedulerTask>
 		- removeBuffer : List<SchedulerTask>
 		- isChanged : boolean = false
+		- clearFlag " boolean = false
 		__
 		{static} - adder(list : List<SchedulerTask>, task : SchedulerTask) : void
 		- ScheduleTaskRegister() : ScheduleTaskRegister

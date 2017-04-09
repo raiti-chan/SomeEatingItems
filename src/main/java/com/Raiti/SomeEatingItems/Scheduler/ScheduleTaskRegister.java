@@ -22,105 +22,32 @@ import static net.minecraftforge.fml.common.gameevent.TickEvent.Phase.START;
  */
 @SuppressWarnings("WeakerAccess")
 public class ScheduleTaskRegister {
-	
-	//==RegisterInstance================================================================================================
-	
-	/**
-	 * World tick start schedule instance.
-	 */
-	private static final ScheduleTaskRegister WORLD_START = new ScheduleTaskRegister();
-	
-	/**
-	 * World tick end schedule instance.
-	 */
-	private static final ScheduleTaskRegister WORLD_END = new ScheduleTaskRegister();
-	
-	/**
-	 * Player tick start schedule instance.
-	 */
-	private static final ScheduleTaskRegister PLAYER_START = new ScheduleTaskRegister();
-	
-	/**
-	 * Player tick end schedule instance.
-	 */
-	private static final ScheduleTaskRegister PLAYER_END = new ScheduleTaskRegister();
-	
-	/**
-	 * Client Tick start schedule instance.
-	 */
-	private static final ScheduleTaskRegister CLIENT_START = new ScheduleTaskRegister();
-	
-	/**
-	 * Client Tick end schedule instance.
-	 */
-	private static final ScheduleTaskRegister CLIENT_END = new ScheduleTaskRegister();
-	
-	/**
-	 * Server Tick start schedule instance.
-	 */
-	private static final ScheduleTaskRegister SERVER_START = new ScheduleTaskRegister();
-	
-	/**
-	 * Server Tick end schedule instance.
-	 */
-	private static final ScheduleTaskRegister SERVER_END = new ScheduleTaskRegister();
-	
-	/**
-	 * Render Tick start schedule instance.
-	 */
-	private static final ScheduleTaskRegister RENDER_START = new ScheduleTaskRegister();
-	
-	/**
-	 * Render Tick end schedule instance.
-	 */
-	private static final ScheduleTaskRegister RENDER_END = new ScheduleTaskRegister();
-	
-	/**
-	 * Get the instance of Register.
-	 *
-	 * @param type  tick event type.
-	 * @param phase event phase.
-	 * @return Register instance.
-	 */
-	@NotNull
-	static ScheduleTaskRegister getRegisterInstance (@NotNull TickEvent.Type type, @NotNull TickEvent.Phase phase) {
-		switch (type) {
-			case WORLD:
-				return phase == START ? WORLD_START : WORLD_END;
-			case PLAYER:
-				return phase == START ? PLAYER_START : PLAYER_END;
-			case CLIENT:
-				return phase == START ? CLIENT_START : CLIENT_END;
-			case SERVER:
-				return phase == START ? SERVER_START : SERVER_END;
-			case RENDER:
-				return phase == START ? RENDER_START : RENDER_END;
-		}
-		return null;
-	}
-	
-	//==================================================================================================================
-	
+
 	/**
 	 * Task list.
 	 */
-	private List<SchedulerTask> tasks = new ArrayList<>();
+	protected List<SchedulerTask> tasks = new ArrayList<>();
 	
 	/**
 	 * Add buffer.
 	 */
-	private List<SchedulerTask> buffer = new ArrayList<>();
+	protected List<SchedulerTask> buffer = new ArrayList<>();
 	
 	/**
 	 * Remove task buffer.
 	 */
-	private List<SchedulerTask> removeBuffer = new ArrayList<>();
+	protected List<SchedulerTask> removeBuffer = new ArrayList<>();
 	
 	/**
 	 * True if there is a change to Register.
 	 * It is false when the {@link #applyChangesToRegister()} is executed.
 	 */
-	private boolean isChanged = false;
+	protected boolean isChanged = false;
+	
+	/**
+	 * If {@link #clear()} method executed, will be true.
+	 */
+	protected boolean clearFlag = false;
 	
 	/**
 	 * Functions to add to the list in descending order of priority.
@@ -128,7 +55,7 @@ public class ScheduleTaskRegister {
 	 * @param list List to be added.
 	 * @param task Tasks to add.
 	 */
-	private static void adder (List<SchedulerTask> list, SchedulerTask task) {
+	protected static void adder (List<SchedulerTask> list, SchedulerTask task) {
 		if (list.isEmpty()) {
 			list.add(task);
 			return;
@@ -149,13 +76,13 @@ public class ScheduleTaskRegister {
 	/**
 	 * Prohibit the creation of instances of this class.
 	 */
-	private ScheduleTaskRegister () {
+	ScheduleTaskRegister () {
 	}
 	
 	/**
 	 * Apply changes to Register.
 	 */
-	private void applyChangesToRegister () {
+	protected void applyChangesToRegister () {
 		tasks.removeAll(removeBuffer);
 		if (this.tasks.isEmpty()) { //タスクが空の場合
 			this.tasks = this.buffer; //空なのでそのままバッファを入れる
@@ -216,12 +143,28 @@ public class ScheduleTaskRegister {
 	}
 	
 	/**
+	 * Clear to register.
+	 * This method also remove changes to the register.
+	 */
+	void clear () {
+		clearFlag = true;
+	}
+	
+	/**
 	 * Execute the task.
 	 * It is not recommended to run this method arbitrarily.
 	 * Normally, this method is executed at a predetermined timing.
 	 */
 	void run () {
 		this.tasks.forEach(SchedulerTask::runTry);//登録されているスケジュールを実行
+		if (clearFlag) {
+			tasks.clear();
+			buffer.clear();
+			removeBuffer.clear();
+			clearFlag = false;
+			isChanged = false;
+			return;
+		}
 		if (!isChanged) return;//変更が無ければ帰す
 		applyChangesToRegister();//バッファへ溜められたレジスターへの変更を反映する。
 	}
