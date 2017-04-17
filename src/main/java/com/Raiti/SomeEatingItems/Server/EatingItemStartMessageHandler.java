@@ -1,13 +1,14 @@
 package com.Raiti.SomeEatingItems.Server;
 
-import com.Raiti.SomeEatingItems.Packet.EatingItemStartMessage;
-import com.Raiti.SomeEatingItems.Scheduler.PlayerSchedulerTask;
-import com.Raiti.SomeEatingItems.SomeEatingItems;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.text.TextComponentString;
+
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+
+import com.Raiti.SomeEatingItems.Packet.EatingItemStartMessage;
+import com.Raiti.SomeEatingItems.Scheduler.PlayerSchedulerTask;
 
 /**
  * <br>Created by Raiti-chan on 2017/03/05.
@@ -29,8 +30,9 @@ public class EatingItemStartMessageHandler implements IMessageHandler<EatingItem
 	 */
 	@Override
 	public IMessage onMessage (EatingItemStartMessage message, MessageContext ctx) {
-		if (ctx.getServerHandler().playerEntity.inventory.getCurrentItem() == ItemStack.EMPTY) return null;
-		PlayerSchedulerTask task = new EatingTask(ctx.getServerHandler().playerEntity);
+		ctx.getServerHandler().playerEntity.sendMessage(new TextComponentString("[Server]H[" + message.getActiveHand().name() + "]RightClick-" + ctx.getServerHandler().playerEntity.getHeldItem(message.getActiveHand())));
+		if (ctx.getServerHandler().playerEntity.getHeldItem(message.getActiveHand()) == ItemStack.EMPTY) return null;
+		PlayerSchedulerTask task = new EatingTask(ctx.getServerHandler().playerEntity, message.getActiveHand());
 		task.start();
 		return null;
 	}

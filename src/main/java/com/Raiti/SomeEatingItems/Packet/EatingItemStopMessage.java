@@ -1,8 +1,11 @@
 package com.Raiti.SomeEatingItems.Packet;
 
+import net.minecraft.util.EnumHand;
+
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 import io.netty.buffer.ByteBuf;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * <br>Created by Raiti-chan on 2017/03/28.
@@ -11,24 +14,20 @@ import io.netty.buffer.ByteBuf;
  * @version 1.0.0
  * @since 1.0.0
  */
-public class EatingItemStopMessage implements IMessage {
+public class EatingItemStopMessage extends EatingItemStartMessage {
 	/**
-	 * Convert from the supplied buffer into your specific message type
-	 *
-	 * @param buf data
+	 * @param hand Active hand.
 	 */
-	@Override
-	public void fromBytes (ByteBuf buf) {
-		
+	public EatingItemStopMessage (@NotNull EnumHand hand) {
+		super(hand);
 	}
 	
 	/**
-	 * Deconstruct your message into the supplied byte buffer
-	 *
-	 * @param buf data
+	 * This constructor is Not used.
+	 * This is a constructor for instance creation by Forge's reflection.
 	 */
-	@Override
-	public void toBytes (ByteBuf buf) {
-		
+	@SuppressWarnings({"deprecation", "DeprecatedIsStillUsed"})
+	@Deprecated
+	public EatingItemStopMessage () {
 	}
 }

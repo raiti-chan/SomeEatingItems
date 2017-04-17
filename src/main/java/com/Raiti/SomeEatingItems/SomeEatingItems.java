@@ -38,7 +38,7 @@ public class SomeEatingItems {
 	/**
 	 * This mod version.
 	 */
-	public static final String MOD_VERSION = "1.11.x-1.0.0 a";
+	public static final String MOD_VERSION = "1.11.x-1.0.0 a-2";
 	
 	
 	/**

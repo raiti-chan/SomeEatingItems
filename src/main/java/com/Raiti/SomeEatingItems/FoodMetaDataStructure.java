@@ -16,6 +16,8 @@ public class FoodMetaDataStructure {
 	
 	public static final String EATING_TIME = "EatingTime";
 	
+	public static final String CAN_ALWAYS_EATEN = "CanAlwaysEaten";
+	
 	public FoodMetaDataStructure(NBTTagCompound compound){
 		
 		
@@ -36,5 +38,9 @@ public class FoodMetaDataStructure {
 		if (compound == null) return 32;
 		int time = compound.getInteger(EATING_TIME);
 		return time <= 0 ? 32 : time;
+	}
+	
+	public static boolean canAlwaysEaten(NBTTagCompound compound) {
+		return compound.getBoolean(CAN_ALWAYS_EATEN);
 	}
 }

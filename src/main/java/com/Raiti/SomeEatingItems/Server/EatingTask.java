@@ -2,23 +2,25 @@ package com.Raiti.SomeEatingItems.Server;
 
 import java.util.Random;
 
-import com.Raiti.SomeEatingItems.FoodMetaDataStructure;
-import com.Raiti.SomeEatingItems.Packet.EatingItemFinishMessage;
-import com.Raiti.SomeEatingItems.Packet.PacketHander;
-import com.Raiti.SomeEatingItems.Scheduler.PlayerSchedulerTask;
-import com.Raiti.SomeEatingItems.Scheduler.ScheduleTaskRegister;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.server.SPacketHeldItemChange;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldServer;
+
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+
+import com.Raiti.SomeEatingItems.FoodMetaDataStructure;
+import com.Raiti.SomeEatingItems.Packet.EatingItemFinishMessage;
+import com.Raiti.SomeEatingItems.Packet.PacketHander;
+import com.Raiti.SomeEatingItems.Scheduler.PlayerSchedulerTask;
+import com.Raiti.SomeEatingItems.Scheduler.ScheduleTaskRegister;
+
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -32,6 +34,8 @@ public class EatingTask extends PlayerSchedulerTask {
 	
 	private static final Random RANDOM = new Random();
 	
+	private EnumHand activeHand;
+	
 	private int count = 0;
 	
 	/**
@@ -41,10 +45,11 @@ public class EatingTask extends PlayerSchedulerTask {
 	 * @param player The player of the bind this event.
 	 */
 	@SuppressWarnings("WeakerAccess")
-	public EatingTask (@NotNull EntityPlayerMP player) {
+	public EatingTask (@NotNull EntityPlayerMP player, EnumHand hand) {
 		super(TickEvent.Phase.END, player);
+		activeHand = hand;
 		int time = FoodMetaDataStructure.getEatingTime(FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(
-				player.inventory.getCurrentItem().getTagCompound()));
+				player.getHeldItem(hand).getTagCompound()));
 		this.setIntervalTime(0);
 		this.setStartDelay(0);
 		this.setLoopCount(time);
@@ -53,20 +58,20 @@ public class EatingTask extends PlayerSchedulerTask {
 	
 	@Override
 	public void run () {
-		if (count % 4 == 0) updateItemUse((EntityPlayerMP) getPlayer(), getPlayer().inventory.getCurrentItem(), 5);
+		if (count % 4 == 0) updateItemUse((EntityPlayerMP) getPlayer(), getPlayer().getHeldItem(activeHand), 5);
 		count++;
 	}
 	
 	@Override
 	public void finish () {
 		EntityPlayerMP player = (EntityPlayerMP) getPlayer();
-		ItemStack stack = player.inventory.getCurrentItem();
+		ItemStack stack = player.getHeldItem(activeHand);
 		updateItemUse(player, stack, 16);
 		stack.shrink(1);
 		player.getEntityWorld().playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_PLAYER_BURP, SoundCategory.PLAYERS, 0.5F, player.world.rand.nextFloat() * 0.1F + 0.9F);
 		onEaten(stack);
 		PacketHander.INSTANCE.sendTo(new EatingItemFinishMessage(), player);
-		player.setHeldItem(player.getActiveHand(), stack.getCount() <= 0 ? ItemStack.EMPTY : stack);
+		player.setHeldItem(activeHand, stack.getCount() <= 0 ? ItemStack.EMPTY : stack);
 		player.connection.sendPacket(new SPacketHeldItemChange(player.inventory.currentItem));
 	}
 	

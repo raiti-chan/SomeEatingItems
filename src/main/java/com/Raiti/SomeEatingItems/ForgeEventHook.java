@@ -2,21 +2,10 @@ package com.Raiti.SomeEatingItems;
 
 import java.util.Random;
 
-import com.Raiti.SomeEatingItems.Scheduler.SchedulerTask;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityFireworkRocket;
-import net.minecraft.entity.item.EntityTNTPrimed;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.Vec3d;
-
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.Cancelable;
@@ -25,7 +14,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import com.Raiti.SomeEatingItems.Packet.EatingItemStartMessage;
 import com.Raiti.SomeEatingItems.Packet.EatingItemStopMessage;
 import com.Raiti.SomeEatingItems.Packet.PacketHander;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 /**
  * ForgeEventFactory's EVENT_BUS on hook.
@@ -52,12 +40,29 @@ public class ForgeEventHook {
 	 */
 	@SubscribeEvent
 	public void onRightClickItem (PlayerInteractEvent.RightClickItem event) {
-		if (!event.getWorld().isRemote) return; //サーバー側の処理はさせないっ!!
-		if (FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound()) == null)
-			return; //タグが無かったら(null)無視
-		event.getEntityLiving().setActiveHand(event.getHand()); //アイテムを使用している状態へ
-		PacketHander.INSTANCE.sendToServer(new EatingItemStartMessage()); // サーバーへ通知
+		if (!event.getWorld().isRemote) {
+			
+			if (event.getHand() == EnumHand.OFF_HAND ) {
+				NBTTagCompound compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getEntityLiving().getHeldItem(EnumHand.MAIN_HAND).getTagCompound());
+				if (compound != null && event.getEntityPlayer().canEat(FoodMetaDataStructure.canAlwaysEaten(compound))) event.setCanceled(true);
+			}
+			
+			if (FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound()) != null)
+				event.setCanceled(true);
+			return; //サーバー側の処理はさせないっ!!
+		}
+		if (event.getHand() == EnumHand.OFF_HAND && event.getEntityLiving().isHandActive()) {
+			event.setCanceled(true);
+			return; //メインハンドがアクティブだった場合処理させない
+		}
+		NBTTagCompound compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound());
+		if (compound == null) return; //タグが無かったら(null)無視
 		event.setCanceled(true);
+		if (!event.getEntityPlayer().canEat(FoodMetaDataStructure.canAlwaysEaten(compound))) return; //満腹の時食べられないように
+		
+		event.getEntityLiving().sendMessage(new TextComponentString("[Client]H[" + event.getHand().name() + "]RightClick-" + event.getItemStack()));//debug
+		event.getEntityLiving().setActiveHand(event.getHand()); //アイテムを使用している状態へ
+		PacketHander.INSTANCE.sendToServer(new EatingItemStartMessage(event.getHand())); // サーバーへ通知
 	}
 	
 	/**
@@ -106,10 +111,11 @@ public class ForgeEventHook {
 	 */
 	@SubscribeEvent
 	public void onPlayerUseItem_Stop (LivingEntityUseItemEvent.Stop event) {
-		if (event.getEntityLiving().world.isRemote && FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItem().getTagCompound()) != null)
-			PacketHander.INSTANCE.sendToServer(new EatingItemStopMessage());
+		if (event.getEntityLiving().world.isRemote && FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItem().getTagCompound()) != null) {
+			event.getEntityLiving().sendMessage(new TextComponentString("[Client]H[" + event.getEntityLiving().getActiveHand().name() + "]EatingStop-" + event.getItem()));//debug
+			PacketHander.INSTANCE.sendToServer(new EatingItemStopMessage(event.getEntityLiving().getActiveHand()));
+		}
 	}
 	
 	
-
 }
