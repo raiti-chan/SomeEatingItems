@@ -58,14 +58,20 @@ public class SomeEatingItemsTransformer implements IClassTransformer {
 	public static int getMaxItemUseDuration(ItemStack stack) {
 		NBTTagCompound compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(stack.getTagCompound());
 		if (compound == null) return stack.getMaxItemUseDuration();
-		int eatingTime = compound.getInteger("EatingTime");
-		return (eatingTime <= 0 ? 32 : eatingTime);
+		return 32;
 	}
 	
 	@SuppressWarnings("unused")
 	public static int getItemInUseCount(EntityPlayerSP player) {
 		ItemStack stack = player.getActiveItemStack();
 		if (FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(stack.getTagCompound()) == null) return player.getItemInUseCount();
-		return player.getItemInUseCount() - 26;
+		return player.getItemInUseCount() - 27;
+	}
+	
+	
+	@SuppressWarnings("unused")
+	public static EnumAction getItemUseAction (ItemStack itemStack) {
+		if (FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(itemStack.getTagCompound()) != null) return EnumAction.EAT;
+		return itemStack.getItemUseAction();
 	}
 }

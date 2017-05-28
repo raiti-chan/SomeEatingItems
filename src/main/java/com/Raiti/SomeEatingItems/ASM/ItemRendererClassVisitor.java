@@ -61,11 +61,56 @@ public class ItemRendererClassVisitor extends ClassVisitor {
 	@Override
 	public MethodVisitor visitMethod (int access, String name, String desc, String signature, String[] exceptions) {
 		final MethodVisitor visitor = super.visitMethod(access, name, desc, signature, exceptions);
-		if (this.renderItemInFirstPerson.match(name, desc)) return new DebugUtil.OutputJVMASMCode(visitor);
-		if (this.transformEatFirstPerson.match(name, desc)) return new DebugUtil.OutputJVMASMCode(visitor);
+		if (this.renderItemInFirstPerson.match(name, desc)) return new RenderItemInFirstPersonVisitor(visitor);
+		if (this.transformEatFirstPerson.match(name, desc)) return new TransformEatFirstPersonVisitor(visitor);
 		
 		return visitor;
 	}
 	
+	private class RenderItemInFirstPersonVisitor extends MethodVisitor {
+		
+		private final MethodName triggerMethod_1;
+		
+		
+		private RenderItemInFirstPersonVisitor (MethodVisitor mv) {
+			super(ASM5, mv);
+			triggerMethod_1 = new MethodName(MethodName.getMappedClassName("net/minecraft/item/ItemStack"), PairName.GET_ITEM_USE_ACTION, "()Lnet/minecraft/item/EnumAction;");
+		}
+		
+		@Override
+		public void visitMethodInsn (int opcode, String owner, String name, String desc, boolean itf) {
+			
+			if (triggerMethod_1.match(name, desc)) {
+				super.visitMethodInsn(Opcodes.INVOKESTATIC, "com/Raiti/SomeEatingItems/ASM/SomeEatingItemsTransformer", "getItemUseAction", "(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/item/EnumAction;", false);
+				return;
+			}
+			super.visitMethodInsn(opcode, owner, name, desc, itf);
+		}
+	}
+	
+	private class TransformEatFirstPersonVisitor extends MethodVisitor {
+		
+		private  final  MethodName triggerMethod_1;
+		private  final  MethodName triggerMethod_2;
+		
+		private TransformEatFirstPersonVisitor(MethodVisitor mv){
+			super(ASM5, mv);
+			triggerMethod_1 = new MethodName(MethodName.getMappedClassName("net/minecraft/client/entity/EntityPlayerSP"), PairName.GET_ITEM_IN_USE_COUNT, "()I");
+			triggerMethod_2 = new MethodName(MethodName.getMappedClassName("net/minecraft/item/ItemStack"), PairName.GET_MAX_ITEM_USE_DURATION, "()I");
+		}
+		
+		@Override
+		public void visitMethodInsn (int opcode, String owner, String name, String desc, boolean itf) {
+			if (triggerMethod_1.match(name, desc)) {
+				super.visitMethodInsn(Opcodes.INVOKESTATIC, "com/Raiti/SomeEatingItems/ASM/SomeEatingItemsTransformer", "getItemInUseCount","(Lnet/minecraft/client/entity/EntityPlayerSP;)I", false);
+				return;
+			}
+			if (triggerMethod_2.match(name, desc)) {
+				super.visitMethodInsn(Opcodes.INVOKESTATIC, "com/Raiti/SomeEatingItems/ASM/SomeEatingItemsTransformer", "getMaxItemUseDuration", "(Lnet/minecraft/item/ItemStack;)I", false);
+				return;
+			}
+			super.visitMethodInsn(opcode, owner, name, desc, itf);
+		}
+	}
 	
 }

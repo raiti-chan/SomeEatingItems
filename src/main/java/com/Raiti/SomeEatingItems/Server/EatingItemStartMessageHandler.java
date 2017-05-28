@@ -30,7 +30,7 @@ public class EatingItemStartMessageHandler implements IMessageHandler<EatingItem
 	 */
 	@Override
 	public IMessage onMessage (EatingItemStartMessage message, MessageContext ctx) {
-		ctx.getServerHandler().playerEntity.sendMessage(new TextComponentString("[Server]H[" + message.getActiveHand().name() + "]RightClick-" + ctx.getServerHandler().playerEntity.getHeldItem(message.getActiveHand())));
+		//ctx.getServerHandler().playerEntity.sendMessage(new TextComponentString("[Server]H[" + message.getActiveHand().name() + "]RightClick-" + ctx.getServerHandler().playerEntity.getHeldItem(message.getActiveHand())));
 		if (ctx.getServerHandler().playerEntity.getHeldItem(message.getActiveHand()) == ItemStack.EMPTY) return null;
 		PlayerSchedulerTask task = new EatingTask(ctx.getServerHandler().playerEntity, message.getActiveHand());
 		task.start();

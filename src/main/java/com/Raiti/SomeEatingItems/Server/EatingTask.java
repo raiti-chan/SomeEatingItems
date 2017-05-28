@@ -88,6 +88,7 @@ public class EatingTask extends PlayerSchedulerTask {
 	 * @param eatingParticleCount particle count.
 	 */
 	private void updateItemUse (EntityPlayerMP entity, ItemStack stack, int eatingParticleCount) {
+		if (count < 5) return;
 		for (int i = 0; i < eatingParticleCount; i++) { //パーティクルの計算
 			Vec3d vec3d = new Vec3d(((double) RANDOM.nextFloat() - 0.5D) * 0.1D, Math.random() * 0.1D + 0.1D, 0.0D);
 			vec3d = vec3d.rotatePitch(-entity.rotationPitch * 0.017453292F);

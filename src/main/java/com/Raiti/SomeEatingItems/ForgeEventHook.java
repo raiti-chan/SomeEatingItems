@@ -32,6 +32,43 @@ public class ForgeEventHook {
 	 */
 	private Random random = new Random();
 	
+	/**
+	 * This event occurs when player was right click on block.
+	 * @param event RightClick on Block Event
+	 */
+	@SubscribeEvent
+	public  void onRightClickItemBlock (PlayerInteractEvent.RightClickBlock event) {
+		NBTTagCompound compound;
+		//アイテムにFoodMetaDataがついていたら置けないように(処理をキャンセルする)
+		event.setCanceled(FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound()) != null);
+		if (!event.getWorld().isRemote) {
+			//サーバー側の処理
+			if (event.getHand() == EnumHand.OFF_HAND) {
+				//オフハンドの処理
+				//メインハンドのアイテムを取得
+				compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getEntityLiving().getHeldItem(EnumHand.MAIN_HAND).getTagCompound());
+				//メインハンドのアイテムがFooMetaDataを持っていたらオフハンドのアイテムの処理をしない
+				if (compound != null) event.setCanceled(true);
+			}
+			
+			if (FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound()) != null)
+				event.setCanceled(true);
+			return;//サーバー側の処理はさせないっ!!
+		}
+		if (event.getHand() == EnumHand.OFF_HAND && event.getEntityLiving().isHandActive()) {
+			event.setCanceled(true);
+			return; //メインハンドがアクティブだった場合処理させない
+		}
+		compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound());
+		if (compound == null) return;//タグが無かったら(null)無視
+		event.setCanceled(true);
+		if (!event.getEntityPlayer().canEat(FoodMetaDataStructure.canAlwaysEaten(compound))) return; //満腹の時食べられないように
+		
+		//event.getEntityLiving().sendMessage(new TextComponentString("[Client]H[" + event.getHand().name() + "]RightClick-" + event.getItemStack()));//debug
+		event.getEntityLiving().setActiveHand(event.getHand());//アイテムを使用している状態へ
+		PacketHander.INSTANCE.sendToServer(new EatingItemStartMessage(event.getHand()));
+		
+	}
 	
 	/**
 	 * This event occurs when player was right click.
@@ -60,7 +97,7 @@ public class ForgeEventHook {
 		event.setCanceled(true);
 		if (!event.getEntityPlayer().canEat(FoodMetaDataStructure.canAlwaysEaten(compound))) return; //満腹の時食べられないように
 		
-		event.getEntityLiving().sendMessage(new TextComponentString("[Client]H[" + event.getHand().name() + "]RightClick-" + event.getItemStack()));//debug
+		//event.getEntityLiving().sendMessage(new TextComponentString("[Client]H[" + event.getHand().name() + "]RightClick-" + event.getItemStack()));//debug
 		event.getEntityLiving().setActiveHand(event.getHand()); //アイテムを使用している状態へ
 		PacketHander.INSTANCE.sendToServer(new EatingItemStartMessage(event.getHand())); // サーバーへ通知
 	}
@@ -75,8 +112,7 @@ public class ForgeEventHook {
 		if (!event.getEntityLiving().getEntityWorld().isRemote) return; //サーバー側の処理はさせないっ!!
 		NBTTagCompound compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItem().getTagCompound()); //タグの取得
 		if (compound == null) return; //タグが無かったら(null)無視
-		int eatingTime = FoodMetaDataStructure.getEatingTime(compound); //食べる時間を取得
-		event.setDuration((eatingTime <= 0 ? 32 : eatingTime) + 27); //かかる時間を設定(+27はバニラでの処理を避けるため)
+		event.setDuration(59); //アイテムアニメーションの時間
 		
 	}
 	
@@ -93,8 +129,7 @@ public class ForgeEventHook {
 		
 		//final int eatingTime = FoodMetaDataStructure.getEatingTime(compound); //食べるのにかかる時間を取得
 		//final int duration = event.getDuration(); //残り時間を取得
-		
-		event.setDuration(event.getDuration() + 1); //アイテムの使用時間を止める
+		if (event.getDuration() <= 27) event.setDuration(51);//アイテムの使用時間の
 		/*
 		if (duration <= 27) { //Durationが27以下だった場合Finishの処理
 			onPlayerUseItem_Finish(event.getEntityLiving(), event.getItem());
@@ -112,7 +147,7 @@ public class ForgeEventHook {
 	@SubscribeEvent
 	public void onPlayerUseItem_Stop (LivingEntityUseItemEvent.Stop event) {
 		if (event.getEntityLiving().world.isRemote && FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItem().getTagCompound()) != null) {
-			event.getEntityLiving().sendMessage(new TextComponentString("[Client]H[" + event.getEntityLiving().getActiveHand().name() + "]EatingStop-" + event.getItem()));//debug
+			//event.getEntityLiving().sendMessage(new TextComponentString("[Client]H[" + event.getEntityLiving().getActiveHand().name() + "]EatingStop-" + event.getItem()));//debug
 			PacketHander.INSTANCE.sendToServer(new EatingItemStopMessage(event.getEntityLiving().getActiveHand()));
 		}
 	}

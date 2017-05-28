@@ -38,8 +38,8 @@ minecraft {
 
 jar {
 	manifest {
-		//attributes 'FMLCorePlugin': 'com.Raiti.SomeEatingItems.ASM.SomeEatingItemsCorePlugin',
-		//		'FMLCorePluginContainsFMLMod': 'true'
+		attributes 'FMLCorePlugin': 'com.Raiti.SomeEatingItems.ASM.SomeEatingItemsCorePlugin',
+				'FMLCorePluginContainsFMLMod': 'true'
 	}
 }
 

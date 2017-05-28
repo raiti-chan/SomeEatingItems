@@ -26,7 +26,7 @@ public class EatingItemStopMessageHandler implements IMessageHandler<EatingItemS
 	 */
 	@Override
 	public IMessage onMessage (EatingItemStopMessage message, MessageContext ctx) {
-		ctx.getServerHandler().playerEntity.sendMessage(new TextComponentString("[Server]H[" + message.getActiveHand() + "]EatingStop-" + ctx.getServerHandler().playerEntity.getHeldItem(message.getActiveHand())));
+		//ctx.getServerHandler().playerEntity.sendMessage(new TextComponentString("[Server]H[" + message.getActiveHand() + "]EatingStop-" + ctx.getServerHandler().playerEntity.getHeldItem(message.getActiveHand())));
 		SchedulerRunner.PLAYER_END.getPlayerTasks(ctx.getServerHandler().playerEntity).forEach(playerSchedulerTask -> {
 			if (playerSchedulerTask instanceof EatingTask) playerSchedulerTask.stop();
 		});
