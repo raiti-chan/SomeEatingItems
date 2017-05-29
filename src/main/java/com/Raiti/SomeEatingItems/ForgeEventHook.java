@@ -2,12 +2,17 @@ package com.Raiti.SomeEatingItems;
 
 import java.util.Random;
 
+import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.play.server.SPacketHeldItemChange;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.text.TextComponentString;
 
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.common.eventhandler.Cancelable;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -37,37 +42,21 @@ public class ForgeEventHook {
 	 * @param event RightClick on Block Event
 	 */
 	@SubscribeEvent
-	public  void onRightClickItemBlock (PlayerInteractEvent.RightClickBlock event) {
-		NBTTagCompound compound;
+	public void onRightClickItemBlock (PlayerInteractEvent.RightClickBlock event) {
+		//noinspection StatementWithEmptyBody
+		if (FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound()) != null) {
+		}
+		//NBTTagCompound compound;
 		//アイテムにFoodMetaDataがついていたら置けないように(処理をキャンセルする)
-		event.setCanceled(FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound()) != null);
+		//event.setCanceled(FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound()) != null);
+	}
+	
+	//@SubscribeEvent
+	public void blockPlaceEvent (BlockEvent.PlaceEvent event) {
+		event.setCanceled(FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getPlayer().getHeldItem(event.getHand()).getTagCompound()) != null);
 		if (!event.getWorld().isRemote) {
-			//サーバー側の処理
-			if (event.getHand() == EnumHand.OFF_HAND) {
-				//オフハンドの処理
-				//メインハンドのアイテムを取得
-				compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getEntityLiving().getHeldItem(EnumHand.MAIN_HAND).getTagCompound());
-				//メインハンドのアイテムがFooMetaDataを持っていたらオフハンドのアイテムの処理をしない
-				if (compound != null) event.setCanceled(true);
-			}
-			
-			if (FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound()) != null)
-				event.setCanceled(true);
-			return;//サーバー側の処理はさせないっ!!
+			((EntityPlayerMP)event.getPlayer()).connection.sendPacket(new SPacketHeldItemChange(event.getPlayer().inventory.currentItem));
 		}
-		if (event.getHand() == EnumHand.OFF_HAND && event.getEntityLiving().isHandActive()) {
-			event.setCanceled(true);
-			return; //メインハンドがアクティブだった場合処理させない
-		}
-		compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound());
-		if (compound == null) return;//タグが無かったら(null)無視
-		event.setCanceled(true);
-		if (!event.getEntityPlayer().canEat(FoodMetaDataStructure.canAlwaysEaten(compound))) return; //満腹の時食べられないように
-		
-		//event.getEntityLiving().sendMessage(new TextComponentString("[Client]H[" + event.getHand().name() + "]RightClick-" + event.getItemStack()));//debug
-		event.getEntityLiving().setActiveHand(event.getHand());//アイテムを使用している状態へ
-		PacketHander.INSTANCE.sendToServer(new EatingItemStartMessage(event.getHand()));
-		
 	}
 	
 	/**

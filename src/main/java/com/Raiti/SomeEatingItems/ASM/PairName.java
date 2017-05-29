@@ -18,7 +18,7 @@ public class PairName {
 	/**
 	 * Method PairName object at {@link net.minecraft.client.renderer.ItemRenderer#renderItemInFirstPerson(float) ItemRenderer#renderItemInFirstPerson(float)}
 	 */
-	public static final PairName RENDER_ITEM_IN_FIRST_PERSON = new PairName("renderItemInFirstPerson", "func_78440_a");
+	public static final PairName RENDER_ITEM_IN_FIRST_PERSON = new PairName("renderItemInFirstPerson", "func_187457_a");
 	
 	public static final PairName TRANSFORM_EAT_FIRST_PERSON = new PairName("transformEatFirstPerson", "func_187454_a");
 	
@@ -30,7 +30,7 @@ public class PairName {
 	/**
 	 * Method PairName object at {@link ItemStack#getMaxItemUseDuration() ItemStack#getMaxItemUseDuration()}
 	 */
-	public static final PairName GET_MAX_ITEM_USE_DURATION = new PairName("getMaxItemUseDuration", "func_77626_a");
+	public static final PairName GET_MAX_ITEM_USE_DURATION = new PairName("getMaxItemUseDuration", "func_77988_m");
 	
 	
 	public static final PairName GET_ITEM_IN_USE_COUNT = new PairName("getItemInUseCount", "func_184605_cv");
