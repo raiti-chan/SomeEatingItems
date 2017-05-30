@@ -2,13 +2,12 @@ package com.Raiti.SomeEatingItems;
 
 import java.util.Random;
 
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.SPacketHeldItemChange;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.text.TextComponentString;
 
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -37,26 +36,17 @@ public class ForgeEventHook {
 	 */
 	private Random random = new Random();
 	
-	/**
-	 * This event occurs when player was right click on block.
-	 * @param event RightClick on Block Event
-	 */
-	@SubscribeEvent
-	public void onRightClickItemBlock (PlayerInteractEvent.RightClickBlock event) {
-		//noinspection StatementWithEmptyBody
-		if (FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound()) != null) {
-		}
-		//NBTTagCompound compound;
-		//アイテムにFoodMetaDataがついていたら置けないように(処理をキャンセルする)
-		//event.setCanceled(FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound()) != null);
-	}
 	
-	//@SubscribeEvent
+	@SubscribeEvent
 	public void blockPlaceEvent (BlockEvent.PlaceEvent event) {
-		event.setCanceled(FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getPlayer().getHeldItem(event.getHand()).getTagCompound()) != null);
-		if (!event.getWorld().isRemote) {
-			((EntityPlayerMP)event.getPlayer()).connection.sendPacket(new SPacketHeldItemChange(event.getPlayer().inventory.currentItem));
+		EntityPlayer player = event.getPlayer();
+		ItemStack stack = player.getHeldItem(event.getHand());
+		if (FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(stack.getTagCompound()) != null) {
+			event.setCanceled(true);
+			((EntityPlayerMP)player).connection.sendPacket(new SPacketHeldItemChange(player.inventory.currentItem));
+			
 		}
+		
 	}
 	
 	/**
@@ -68,9 +58,10 @@ public class ForgeEventHook {
 	public void onRightClickItem (PlayerInteractEvent.RightClickItem event) {
 		if (!event.getWorld().isRemote) {
 			
-			if (event.getHand() == EnumHand.OFF_HAND ) {
+			if (event.getHand() == EnumHand.OFF_HAND) {
 				NBTTagCompound compound = FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getEntityLiving().getHeldItem(EnumHand.MAIN_HAND).getTagCompound());
-				if (compound != null && event.getEntityPlayer().canEat(FoodMetaDataStructure.canAlwaysEaten(compound))) event.setCanceled(true);
+				if (compound != null && event.getEntityPlayer().canEat(FoodMetaDataStructure.canAlwaysEaten(compound)))
+					event.setCanceled(true);
 			}
 			
 			if (FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound()) != null)

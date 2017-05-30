@@ -1,6 +1,7 @@
 package com.Raiti.SomeEatingItems.Scheduler;
 
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -163,6 +164,22 @@ public class SchedulerTask implements SchedulerRunnable {
 	}
 	
 	/**
+	 * Allocates a new {@link SchedulerTask} object so that it has {@code runnable} as its run object.
+	 * And register to {@link ScheduleTaskRegister}.
+	 * This constructor has the same effect as {@linkplain SchedulerTask(SchedulerRunnable)}{@code (type, phase, 0, runnable)}.
+	 *
+	 * @param type     Type of tick executed.
+	 *                 This argument can not be null.
+	 * @param phase    The phase of the tick executed.
+	 *                 This argument can not be null.
+	 * @param runnable the object whose {@code run} method is invoked when this task is started.
+	 *                 If {@code null}, this task's run method is invoked.
+	 */
+	public SchedulerTask (@NotNull TickEvent.Type type, @NotNull TickEvent.Phase phase, SchedulerRunnable runnable) {
+		this(type, phase, (byte) 0, runnable);
+	}
+	
+	/**
 	 * Allocates a new {@link SchedulerTask} object.
 	 * And register to {@link ScheduleTaskRegister}.
 	 * This constructor has the same effect as {@linkplain SchedulerTask(SchedulerRunnable)}{@code (type, phase, 0, null)}.
@@ -262,6 +279,7 @@ public class SchedulerTask implements SchedulerRunnable {
 	
 	/**
 	 * Increase current delay time.
+	 *
 	 * @param tick time. (20tick = 1second)
 	 */
 	public void increaseDelayTime (int tick) {
@@ -270,6 +288,7 @@ public class SchedulerTask implements SchedulerRunnable {
 	
 	/**
 	 * Decrease current delay time.
+	 *
 	 * @param tick time. (20tick = 1second)
 	 */
 	public void decreaseDelayTime (int tick) {
@@ -285,6 +304,7 @@ public class SchedulerTask implements SchedulerRunnable {
 	
 	/**
 	 * Increase current remaining loop count.
+	 *
 	 * @param count count.
 	 */
 	public void increaseRemainingLoopCount (int count) {
@@ -293,6 +313,7 @@ public class SchedulerTask implements SchedulerRunnable {
 	
 	/**
 	 * Decrease current remaining loop count.
+	 *
 	 * @param count count.
 	 */
 	public void decreaseRemainingLoopCount (int count) {
@@ -321,15 +342,30 @@ public class SchedulerTask implements SchedulerRunnable {
 	}
 	
 	/**
-	 * Specify to cycle interval time.
-	 * If it is waiting for execution, it will be applied in the next cycle.
-	 * @param tick This value must be a value more than or equal to 0.
-	 *             If you specify a number less than 0, an {@link IllegalArgumentException} will be thrown.
-	 * @throws IllegalArgumentException Thrown if the argument is less than or equal to 0.
+	 * Get to this task's priority.
+	 *
+	 * @return this task's priority.
 	 */
-	public void setIntervalTime (int tick) throws IllegalArgumentException {
-		if (tick < 0) throw new IllegalArgumentException("Time must be a value more than or equal to 0.");
-		intervalTime = tick;
+	public byte getPriority () {
+		return this.priority;
+	}
+	
+	/**
+	 * Get {@link #isRunning}.
+	 *
+	 * @return boolean value of {@link #isRunning}
+	 */
+	public boolean isRunning () {
+		return isRunning;
+	}
+	
+	/**
+	 * Get {@link #loopCount}.
+	 *
+	 * @return value of {@link #loopCount}
+	 */
+	public int getLoopCount () {
+		return loopCount;
 	}
 	
 	/**
@@ -344,32 +380,8 @@ public class SchedulerTask implements SchedulerRunnable {
 	}
 	
 	/**
-	 * Get to this task's priority.
-	 *
-	 * @return this task's priority.
-	 */
-	public byte getPriority () {
-		return this.priority;
-	}
-	
-	/**
-	 * Get {@link #isRunning}.
-	 * @return boolean value of {@link #isRunning}
-	 */
-	public boolean isRunning () {
-		return isRunning;
-	}
-	
-	/**
-	 * Get {@link #loopCount}.
-	 * @return value of {@link #loopCount}
-	 */
-	public int getLoopCount () {
-		return loopCount;
-	}
-	
-	/**
 	 * Get {@link #startDelayTime}.
+	 *
 	 * @return value of {@link #startDelayTime}
 	 */
 	public int getStartDelayTime () {
@@ -378,6 +390,7 @@ public class SchedulerTask implements SchedulerRunnable {
 	
 	/**
 	 * Get {@link #intervalTime}.
+	 *
 	 * @return value of {@link #intervalTime}
 	 */
 	public int getIntervalTime () {
@@ -385,7 +398,21 @@ public class SchedulerTask implements SchedulerRunnable {
 	}
 	
 	/**
+	 * Specify to cycle interval time.
+	 * If it is waiting for execution, it will be applied in the next cycle.
+	 *
+	 * @param tick This value must be a value more than or equal to 0.
+	 *             If you specify a number less than 0, an {@link IllegalArgumentException} will be thrown.
+	 * @throws IllegalArgumentException Thrown if the argument is less than or equal to 0.
+	 */
+	public void setIntervalTime (int tick) throws IllegalArgumentException {
+		if (tick < 0) throw new IllegalArgumentException("Time must be a value more than or equal to 0.");
+		intervalTime = tick;
+	}
+	
+	/**
 	 * Get {@link #remainingLoopCount}.
+	 *
 	 * @return value of {@link #remainingLoopCount}
 	 */
 	public int getRemainingLoopCount () {
@@ -394,6 +421,7 @@ public class SchedulerTask implements SchedulerRunnable {
 	
 	/**
 	 * Get {@link #delayTimeCount}.
+	 *
 	 * @return value of {@link #delayTimeCount}.
 	 */
 	public int getDelayTimeCount () {
