@@ -9,7 +9,9 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.SPacketHeldItemChange;
 import net.minecraft.util.EnumHand;
 
+import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.common.eventhandler.Cancelable;
@@ -47,6 +49,11 @@ public class ForgeEventHook {
 			
 		}
 		
+	}
+	
+	@SubscribeEvent
+	public void onRightClickEntity (PlayerInteractEvent.EntityInteract event) {
+		event.setCanceled(FoodMetaDataStructure.getFoodMetaDataStructureNBTTagCompound(event.getItemStack().getTagCompound()) != null);
 	}
 	
 	/**
